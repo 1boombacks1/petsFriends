@@ -3,17 +3,20 @@ package main
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	jwtware "github.com/gofiber/jwt/v3"
 	"github.com/gofiber/template/html"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/sirupsen/logrus"
 )
 
 type (
 	AuthHandler struct {
-		storage *AuthStorage
+		storage *Storage
 	}
-	AuthStorage struct {
+	Storage struct {
 		users map[string]User
 	}
 	User struct {
@@ -21,6 +24,11 @@ type (
 		password string
 	}
 )
+
+//Обработчик HTTP-запросов которые свзязаны с пользователем
+type UserHandler struct {
+	storage *Storage
+}
 
 // Структуры HTTP-запросов на регистрацию и аунтитификацию
 type RegisterRequest struct {
@@ -39,13 +47,21 @@ type LoginResponse struct {
 	AccessToken string `json:"access_token"`
 }
 
+type ProfileResponse struct {
+	Login    string `json:"login"`
+	Password string `json:"password"`
+}
+
 //Ошибки
 var (
-	errBadCredentials = errors.New("email or password is incorrect")
+	errBadCredentials     = errors.New("email or password is incorrect")
+	errPasswordNotCorrect = errors.New("password is incorrect")
 )
 
 //JWT-ключ, стоит хранить в безопастном месте, а не хардкодить тут
 var jwtSecretKey = []byte("very-secret-key")
+
+const contextKeyUser = "user"
 
 func main() {
 	engine := html.New("../views", ".html")
@@ -53,13 +69,22 @@ func main() {
 		Views: engine,
 	})
 
-	authHandler := &AuthHandler{&AuthStorage{map[string]User{}}}
+	authStorage := &Storage{map[string]User{}}
+	authHandler := &AuthHandler{authStorage}
+	userHandler := &UserHandler{authStorage}
 
-	app.Get("/register", authHandler.RegistrationPage)
-	app.Get("/login", authHandler.LoginPage)
+	publicGroup := app.Group("public")
+	publicGroup.Get("/register", authHandler.RegistrationPage)
+	publicGroup.Get("/login", authHandler.LoginPage)
+	publicGroup.Post("/register", authHandler.Register)
+	publicGroup.Post("/login", authHandler.Login)
 
-	app.Post("/register", authHandler.Register)
-	app.Post("/login", authHandler.Login)
+	authorizedGroup := app.Group("auth")
+	authorizedGroup.Use(jwtware.New(jwtware.Config{
+		SigningKey: jwtSecretKey,
+		ContextKey: contextKeyUser,
+	}))
+	authorizedGroup.Get("/profile", userHandler.Profile)
 
 	app.Static("/", "../public")
 
@@ -89,9 +114,75 @@ func (handler *AuthHandler) Register(c *fiber.Ctx) error {
 		password: regReq.Password,
 	}
 
+	fmt.Printf("Пользователь %s успешно зарегистрирован!\n", regReq.Login)
 	return c.SendStatus(fiber.StatusCreated)
 }
 
 func (handler *AuthHandler) Login(c *fiber.Ctx) error {
+	logReq := LoginRequest{}
+	if err := c.BodyParser(&logReq); err != nil {
+		return fmt.Errorf("body parser: %w", err)
+	}
 
+	user, exists := handler.storage.users[logReq.Login]
+	fmt.Printf("Info:\n-%s\n-%s\n", logReq.Login, logReq.Password)
+
+	if !exists {
+		return errBadCredentials
+	}
+
+	if exists && logReq.Password != user.password {
+		return errPasswordNotCorrect
+	}
+
+	payload := jwt.MapClaims{
+		"sub": logReq.Login,
+		"exp": time.Now().Add(time.Hour * 24).Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
+	t, err := token.SignedString(jwtSecretKey)
+	if err != nil {
+		logrus.WithError(err).Error("JWT token signing")
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+
+	return c.JSON(LoginResponse{AccessToken: t})
+}
+
+func jwtPayloadFromRequest(c *fiber.Ctx) (jwt.MapClaims, bool) {
+	jwtToken, ok := c.Context().Value(contextKeyUser).(*jwt.Token)
+	if !ok {
+		logrus.WithFields(logrus.Fields{
+			"jwt_token_context_value": c.Context().Value(contextKeyUser),
+		}).Error("wrong type of JWT token in context")
+		return nil, false
+	}
+
+	payload, ok := jwtToken.Claims.(jwt.MapClaims)
+	if !ok {
+		logrus.WithFields(logrus.Fields{
+			"jwt_token_claims": jwtToken.Claims,
+		}).Error("wrong type of JWT token claims")
+		return nil, false
+	}
+
+	return payload, true
+}
+
+func (handler *UserHandler) Profile(c *fiber.Ctx) error {
+	payload, ok := jwtPayloadFromRequest(c)
+
+	if !ok {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
+	userInfo, ok := handler.storage.users[payload["sub"].(string)]
+	if !ok {
+		return errors.New("user not found")
+	}
+
+	return c.JSON(ProfileResponse{
+		Login:    userInfo.Login,
+		Password: userInfo.password,
+	})
 }

@@ -5,23 +5,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title> Вход в PetsFriends</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
    </head>
 <body>
   <div class="wrapper">
     <h2>Вход</h2>
-    <form action="#">
+    <form action="/public/login" method="post">
       <div class="input-box">
-        <input type="text" placeholder="Введи логин" required>
+        <input name="login" type="text" placeholder="Введи логин" required>
       </div>
       <div class="input-box">
-        <input type="password" placeholder="Введи пароль" required>
+        <input name="password" type="password" placeholder="Введи пароль" required>
       </div>
       <div class="input-box button">
         <input type="Submit" value="Войти">
       </div>
       <div class="text">
-        <h3>Нету аккаунта? <a href="/register">Регистрируйся!</a></h3>
+        <h3>Нету аккаунта? <a href="/public/register">Регистрируйся!</a></h3>
       </div>
     </form>
   </div>
