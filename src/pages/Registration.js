@@ -1,62 +1,102 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState } from "react";
+import { Link, Navigate } from "react-router-dom";
 
 const Registration = () => {
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordMatch, setPasswordMatch] = useState(true);
   const [registered, setRegistered] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
 
-        await fetch('http://localhost:4000/api/register', {
-            method: 'POST',
-            headers: {'Content-type': 'application/json'},
-            body: JSON.stringify({
-                name,
-                email,
-                password
-            })
-        });
+    if (password !== confirmPassword) {
+      setPasswordMatch(false);
+      return; // Прекратить выполнение функции в случае несовпадения паролей
+    }
 
-        setRegistered(true);
-  }
+    const response = await fetch("http://localhost:4000/api/register", {
+      method: "POST",
+      headers: { "Content-type": "application/json" },
+      body: JSON.stringify({
+        name,
+        login,
+        password,
+      }),
+    });
+
+    const content = await response.json();
+
+    if (content.status === "ok") {
+      setRegistered(true);
+    } else if (content.status === "loginExist") {
+      alert("Пользователь с таким именем уже существует!");
+    }
+  };
 
   if (registered) {
-    return <Navigate to="/login"/>;
+    return <Navigate to="/login" />;
   }
 
   return (
-    <div className='full-center'>
-      <div className='wrapper'>
+    <div className="full-center">
+      <div className="wrapper">
         <h2>Регистрация</h2>
-        <form action='/register' method='post'>
-          <div className='input-box'>
-            <input name='login' type='text' placeholder='Введи логин' required />
+        <form onSubmit={submit}>
+        <div className="input-box">
+            <input
+              name="name"
+              type="text"
+              placeholder="Введите имя"
+              required
+              onChange={(e) => setName(e.target.value)}
+            />
           </div>
-          <div className='input-box'>
-            <input name='password' type='password' placeholder='Придумай пароль' required />
+          <div className="input-box">
+            <input
+              name="login"
+              type="text"
+              placeholder="Введи логин"
+              required
+              onChange={(e) => setLogin(e.target.value)}
+            />
           </div>
-          <div className='input-box'>
-            <input type='password' placeholder='Подтверди пароль' required />
+          <div className="input-box">
+            <input
+              name="password"
+              type="password"
+              placeholder="Придумай пароль"
+              required
+              onChange={(e) => setPassword(e.target.value)}
+            />
           </div>
-          <div className='policy'>
-            <input type='checkbox' />
+          <div className="input-box">
+            <input
+              type="password"
+              placeholder="Подтверди пароль"
+              required
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </div>
+          {!passwordMatch && <p>Пароли не совпадают!</p>}
+          <div className="policy">
+            <input type="checkbox" />
             <h3>I accept all terms & condition</h3>
           </div>
-          <div className='input-box button'>
-            <input type='submit' value='Зарегистрироваться' />
+          <div className="input-box button">
+            <input type="submit" value="Зарегистрироваться" />
           </div>
-          <div className='text'>
+          <div className="text">
             <h3>
-              Уже есть аккаунт? <Link to='/login'>Заходи, не стесняйся</Link>
+              Уже есть аккаунт? <Link to="/login">Заходи, не стесняйся</Link>
             </h3>
           </div>
         </form>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Registration
+export default Registration;

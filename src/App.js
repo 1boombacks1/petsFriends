@@ -4,6 +4,7 @@ import ScrollToTop from './components/ScrollToTop'
 import Registration from './pages/Registration'
 import Main from './pages/Main'
 import Login from './pages/Login'
+import RegisterPet from './pages/RegisterPet'
 function App() {
 
   return (
@@ -12,9 +13,10 @@ function App() {
         <ScrollToTop />
         {/* <Header /> */}
         <Routes>
-          <Route path='/' element={<Main />} />
+          <Route path='/match' element={<Main />} />
           <Route path='/registration' element={<Registration />} />
           <Route path='/login' element={<Login />} />
+          <Route path='/registerPet' element={<RegisterPet />} />
         </Routes>
         {/* <Footer /> */}
       </BrowserRouter>

@@ -14,9 +14,11 @@ type Pet struct {
 	gorm.Model
 	TypePet bool
 	Name    string
+	Age     uint
 	BreedID uint
 	Breed   Breed
 	Sex     bool
+	Mating  bool
 	UserID  uint
 }
 

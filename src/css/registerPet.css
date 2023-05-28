@@ -1,0 +1,100 @@
+
+  body {
+    min-height: 100vh;
+    /* background-image: url('../public/LoginRegistrationBackground.png'); */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    font-family: 'Gilroy', sans-serif;
+  }
+   /* anketa css */
+  .main-container {
+    display: flex;
+    justify-content: space-evenly;
+    width: 100%;
+    min-height: calc(100vh - 120px);
+  }
+
+  .img-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .img-container img {
+    width: 559px;
+  }
+
+  .form-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .form-container h1 {
+    margin-bottom: 20px;
+    color: #000;
+  }
+  .registration-form {
+    display: flex;
+    flex-direction: column;
+    /* border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 20px; */
+    width: 100vw;
+    max-width: 350px;
+  }
+
+  .registration-form label {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .registration-form input,
+  .registration-form select {
+    /* width: 300px; */
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-bottom: 14px;
+  }
+
+  .sub-label {
+    font-size: 12px;
+    margin-left: 5px;
+  }
+
+  .form-group {
+    display: block;
+    align-items: center;
+    /* margin-bottom: 10px; */
+  }
+
+  .form-group label {
+    margin-right: 5px;
+  }
+
+  .radio-group {
+    margin-left: 10px;
+    margin-top: 5px;
+  }
+  .radio-group label:nth-child(2) {
+    margin-right: 30px;
+  }
+
+  .radio-group input[type="radio"] {
+    margin-right: 10px;
+  }
+
+  .rounded-button {
+    border-radius: 25px;
+    background-color: purple;
+    color: white;
+    padding: 10px 20px;
+    margin-top: 20px;
+    border: none;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #5a005a;
+  }
