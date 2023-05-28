@@ -12,8 +12,11 @@ require (
 	github.com/fatih/color v1.14.1 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gofiber/fiber/v2 v2.45.0 // indirect
+	github.com/gofiber/jwt/v3 v3.3.9 // indirect
 	github.com/gofiber/template v1.8.1 // indirect
 	github.com/gohugoio/hugo v0.111.3 // indirect
+	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
+	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/klauspost/compress v1.16.3 // indirect
