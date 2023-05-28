@@ -5,6 +5,7 @@ import Registration from './pages/Registration'
 import Main from './pages/Main'
 import Login from './pages/Login'
 function App() {
+
   return (
     <div className='App'>
       <BrowserRouter>

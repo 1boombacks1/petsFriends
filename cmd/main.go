@@ -3,13 +3,16 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	jwtware "github.com/gofiber/jwt/v3"
-	"github.com/gofiber/template/html"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/sirupsen/logrus"
+
+	"d0c/petsFriends/database"
+	"d0c/petsFriends/routes"
 )
 
 type (
@@ -64,39 +67,44 @@ var jwtSecretKey = []byte("very-secret-key")
 const contextKeyUser = "user"
 
 func main() {
-	engine := html.New("../views", ".html")
-	app := fiber.New(fiber.Config{
-		Views: engine,
-	})
+	database.Init()
+	app := fiber.New()
 
-	authStorage := &Storage{map[string]User{}}
-	authHandler := &AuthHandler{authStorage}
-	userHandler := &UserHandler{authStorage}
-
-	publicGroup := app.Group("public")
-	publicGroup.Get("/register", authHandler.RegistrationPage)
-	publicGroup.Get("/login", authHandler.LoginPage)
-	publicGroup.Post("/register", authHandler.Register)
-	publicGroup.Post("/login", authHandler.Login)
-
-	authorizedGroup := app.Group("auth")
-	authorizedGroup.Use(jwtware.New(jwtware.Config{
-		SigningKey: jwtSecretKey,
-		ContextKey: contextKeyUser,
+	app.Use(cors.New(cors.Config{
+		AllowCredentials: true,
+		AllowOrigins:     "http://localhost:3000",
 	}))
-	authorizedGroup.Get("/profile", userHandler.Profile)
 
-	app.Static("/", "../public")
+	routes.Setup(app)
 
-	logrus.Fatal(app.Listen(":3000"))
-}
+	fmt.Print("Идет запуск сервера!")
+	log.Fatal(app.Listen(":4000"))
 
-func (handler *AuthHandler) RegistrationPage(c *fiber.Ctx) error {
-	return c.Render("registration", fiber.Map{})
-}
+	// engine := html.New("../views", ".html")
+	// app := fiber.New(fiber.Config{
+	// 	Views: engine,
+	// })
 
-func (handler *AuthHandler) LoginPage(c *fiber.Ctx) error {
-	return c.Render("login", fiber.Map{})
+	// authStorage := &Storage{map[string]User{}}
+	// authHandler := &AuthHandler{authStorage}
+	// userHandler := &UserHandler{authStorage}
+
+	// publicGroup := app.Group("public")
+	// publicGroup.Get("/register", authHandler.RegistrationPage)
+	// publicGroup.Get("/login", authHandler.LoginPage)
+	// publicGroup.Post("/register", authHandler.Register)
+	// publicGroup.Post("/login", authHandler.Login)
+
+	// authorizedGroup := app.Group("auth")
+	// authorizedGroup.Use(jwtware.New(jwtware.Config{
+	// 	SigningKey: jwtSecretKey,
+	// 	ContextKey: contextKeyUser,
+	// }))
+	// authorizedGroup.Get("/profile", userHandler.Profile)
+
+	// app.Static("/", "../public")
+
+	// logrus.Fatal(app.Listen(":3000"))
 }
 
 func (handler *AuthHandler) Register(c *fiber.Ctx) error {

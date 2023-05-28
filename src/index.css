@@ -1,12 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
+@font-face {
+  font-family: 'Gilroy';
+  src: url('../public/Gilroy-Regular.ttf');
+  font-weight: 400;
+  font-style: normal;
+}
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Lobster', cursive, sans-serif;
+  font-family: 'Gilroy', cursive, sans-serif;
 }
 body {
-  background: url('https://res.cloudinary.com/finnhvman/image/upload/v1541930411/pattern.png');
+  background: url('../public/LoginRegistrationBackground.png');
 }
 .App {
   min-height: 100vh;

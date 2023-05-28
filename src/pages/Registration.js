@@ -2,6 +2,31 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 
 const Registration = () => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [registered, setRegistered] = useState(false);
+
+  const submit = async (e) => {
+    e.preventDefault();
+
+        await fetch('http://localhost:4000/api/register', {
+            method: 'POST',
+            headers: {'Content-type': 'application/json'},
+            body: JSON.stringify({
+                name,
+                email,
+                password
+            })
+        });
+
+        setRegistered(true);
+  }
+
+  if (registered) {
+    return <Navigate to="/login"/>;
+  }
+
   return (
     <div className='full-center'>
       <div className='wrapper'>
