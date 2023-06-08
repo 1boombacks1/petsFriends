@@ -1,5 +1,12 @@
+h2 {
+  font-family: 'Gilroy', cursive;
+  font-weight: 200;
+}
+
 .swiperwrap {
   overflow: hidden;
+  position: relative;
+  z-index: auto;
 }
 
 .swiperwrap > div {
@@ -16,17 +23,6 @@
 .row > * {
   margin: 5px;
 }
-
-h1 {
-  font-family: 'Damion', cursive;
-  color: #fff;
-  text-shadow: 0px 0px 60px 0px rgba(0, 0, 0, 0.3);
-}
-
-h2 {
-  color: #fff;
-}
-
 .swipe {
   position: absolute;
 }
@@ -34,7 +30,7 @@ h2 {
 .cardContainer {
   width: 90vw;
   max-width: 327.5px;
-  height: 600px;
+  height: 720px;
 }
 
 .cardwrap {
@@ -48,7 +44,7 @@ h2 {
   background-color: #fff;
   width: 80vw;
   max-width: 287.5px;
-  height: 460px;
+  height: 580px;
   box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.1);
   border-radius: 20px;
   background-size: cover;
@@ -61,9 +57,6 @@ h2 {
   height: 100%;
 }
 
-.swipe:last-of-type {
-}
-
 .card h3 {
   position: absolute;
   top: 0;
@@ -73,21 +66,24 @@ h2 {
 }
 
 .infoText {
-  width: 100%;
-  margin: 10px 0 15px;
+  width: 200px;
+  margin: 15px 0 5px;
   justify-content: center;
+  text-align: center;
+  font-size: 20px;
   display: flex;
-  color: #000;
+  color: #a0a0a0;
   animation-name: popup;
   animation-duration: 800ms;
 }
 
 .buttons {
+  position: relative;
   margin: 20px;
   display: flex;
   gap: 40px;
   margin-top: -130px;
-  z-index: 1;
+  z-index: auto;
 }
 
 .buttons button {
@@ -116,12 +112,13 @@ h2 {
   width: 35px;
 }
 .buttons .yes {
-  background: #ff6584;
+  background: #6C63FF;
 }
 .buttons .no {
-  background: #2ddaa5;
+  background: #ff6584;
 }
 
 .buttons button:hover {
   transform: scale(1.05);
+  background: #6e74b4;
 }

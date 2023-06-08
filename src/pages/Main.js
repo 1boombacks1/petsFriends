@@ -1,6 +1,6 @@
 import React from 'react'
-import Header from '../components/Header'
 import SwiperTinder from '../components/SwiperTinder'
+import Sidebar from '../components/SideBar'
 // import { Navigation, Pagination, Scrollbar, A11y } from 'swiper'
 // import { Swiper, SwiperSlide } from 'swiper/react'
 // import 'swiper/css'
@@ -10,8 +10,7 @@ import SwiperTinder from '../components/SwiperTinder'
 
 const Main = () => {
   return (
-    <div className='content sb'>
-      <Header />
+    <div className='content sb' >
       <SwiperTinder />
       <div style={{ width: '100%' }}>
         {/* <Swiper

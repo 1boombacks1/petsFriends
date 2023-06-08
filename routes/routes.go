@@ -12,6 +12,9 @@ func Setup(app *fiber.App) {
 	api.Post("/login", handlers.Login)
 	api.Get("/breeds", handlers.GetBreeds)
 	api.Post("/registerPet", handlers.RegisterPet)
+
+	user := app.Group("user")
+	user.Post("/logout", handlers.Logout)
 	// api.Get("/user", controllers.User)
 	// api.Post("/logout", controllers.Logout)
 }

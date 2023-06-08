@@ -17,7 +17,7 @@ const RegisterPet = () => {
   useEffect(() => {
     const fetchBreeds = async () => {
         try {
-          const response = await fetch('http://localhost:4000/api/breeds'); // Замените URL на ваш эндпоинт для получения списка пород
+          const response = await fetch('http://localhost:4000/api/breeds');
           const data = await response.json();
           setBreeds(data);
           console.log(data)

@@ -28,7 +28,7 @@ const Login = () => {
     const content = await response.json()
 
     console.log(content)
-    if (content.hasPets === true) {
+    if (content.hasPets) {
       console.log("match")
       setRedirectTo("/match");
     } else {

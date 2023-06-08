@@ -60,7 +60,7 @@ func Login(c *fiber.Ctx) error {
 
 	var user models.User
 
-	database.DB.Where("login = ?", data["login"]).First(&user)
+	database.DB.Preload("Pets").Where("login = ?", data["login"]).First(&user)
 
 	if user.Model.ID == 0 {
 		c.Status(fiber.StatusNotFound)
@@ -111,6 +111,20 @@ func Login(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(sendData)
+}
+
+func Logout(c *fiber.Ctx) error {
+	cookie := fiber.Cookie{
+		Name:     "jwt",
+		Value:    "",
+		Expires:  time.Now().Add(-time.Hour),
+		HTTPOnly: true,
+	}
+	c.Cookie(&cookie)
+	c.Status(fiber.StatusOK)
+	return c.JSON(fiber.Map{
+		"status": "ok",
+	})
 }
 
 func GetBreeds(c *fiber.Ctx) error {

@@ -81,13 +81,9 @@ function SwiperTinder() {
       <div>
         <link href='https://fonts.googleapis.com/css?family=Damion&display=swap' rel='stylesheet' />
         <link href='https://fonts.googleapis.com/css?family=Alatsi&display=swap' rel='stylesheet' />
-        {lastDirection ? (
-          <h2 key={lastDirection} className='infoText'>
-            Вы свайпнули {lastDirection}
-          </h2>
-        ) : (
-          <h2 className='infoText'>Swipe right if you like if not swipe left</h2>
-        )}
+        <div className='infoText'>
+          <h2 className='infoText'>Swipe right - if you like if not swipe left</h2>
+        </div>
         <div className='cardContainer'>
           {db.map((character, index) => (
             <TinderCard
@@ -109,9 +105,6 @@ function SwiperTinder() {
           <div className='round-btn no' onClick={() => swipe('left')}>
             <img alt='' src={require('../img/no.png')} />
           </div>
-          {/* <button style={{ backgroundColor: !canGoBack && '#c3c4d3' }} onClick={() => goBack()}>
-            Undo swipe!
-          </button> */}
           <div className='round-btn yes' onClick={() => swipe('right')}>
             <img alt='' src={require('../img/yes.png')} />
           </div>
