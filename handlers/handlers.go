@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"d0c/petsFriends/database"
+	. "d0c/petsFriends/logs"
 	"d0c/petsFriends/models"
-	"log"
 	"os"
 	"strconv"
 	"time"
@@ -38,12 +38,14 @@ func Register(c *fiber.Ctx) error {
 	}
 
 	if err := database.DB.Create(&user).Error; err != nil {
-		log.Printf("User with same login alredy exists!\n")
+		ErrLogger.Printf("User with [%s] login alredy exists!\n", user.Login)
 		c.Status(fiber.StatusBadRequest)
 		return c.JSON(fiber.Map{
 			"status": "loginExist",
 		})
 	}
+
+	InfoLogger.Printf("User [%s,%s,%v] created success!\n", user.Login, user.Name, user.Password)
 
 	return c.JSON(fiber.Map{
 		"status": "ok",
@@ -63,6 +65,7 @@ func Login(c *fiber.Ctx) error {
 	database.DB.Preload("Pets").Where("login = ?", data["login"]).First(&user)
 
 	if user.Model.ID == 0 {
+		ErrLogger.Printf("User [%s] not found in database\n", user.Login)
 		c.Status(fiber.StatusNotFound)
 		return c.JSON(fiber.Map{
 			"status": "userNotFound",
@@ -70,11 +73,14 @@ func Login(c *fiber.Ctx) error {
 	}
 
 	if err := bcrypt.CompareHashAndPassword(user.Password, []byte(data["password"])); err != nil {
+		ErrLogger.Printf("User [%s] exists, but password not correct: %s\n", user.Login, err.Error())
 		c.Status(fiber.StatusBadRequest)
 		return c.JSON(fiber.Map{
 			"status": "incorrectPassword",
 		})
 	}
+
+	InfoLogger.Printf("User [%s] input data correct!", user.Login)
 
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		Issuer:    strconv.Itoa(int(user.Model.ID)),
@@ -83,11 +89,14 @@ func Login(c *fiber.Ctx) error {
 
 	token, err := claims.SignedString([]byte(os.Getenv("SECRET_KEY")))
 	if err != nil {
+		ErrLogger.Printf("Failed to create JWT: %s\n", err.Error())
 		c.Status(fiber.StatusInternalServerError)
 		return c.JSON(fiber.Map{
 			"status": "FailedToLogin",
 		})
 	}
+
+	InfoLogger.Printf("Successful creation JWT for [%s] - [%s]\n", user.Login, token)
 
 	cookie := fiber.Cookie{
 		Name:     "jwt",
@@ -99,6 +108,9 @@ func Login(c *fiber.Ctx) error {
 	c.Cookie(&cookie)
 
 	hasPets := len(user.Pets)
+
+	InfoLogger.Printf("User [%s] have %d pets\n", user.Login, hasPets)
+
 	sendData := fiber.Map{
 		"status":  "ok",
 		"hasPets": false,
@@ -122,6 +134,9 @@ func Logout(c *fiber.Ctx) error {
 	}
 	c.Cookie(&cookie)
 	c.Status(fiber.StatusOK)
+
+	InfoLogger.Println("User logout from app")
+
 	return c.JSON(fiber.Map{
 		"status": "ok",
 	})
@@ -142,6 +157,7 @@ func RegisterPet(c *fiber.Ctx) error {
 		return []byte(os.Getenv("SECRET_KEY")), nil
 	})
 	if err != nil {
+		ErrLogger.Println("Unauthorized user")
 		c.Status(fiber.StatusUnauthorized)
 		return c.JSON(fiber.Map{
 			"status": "unauthorized",
@@ -153,7 +169,7 @@ func RegisterPet(c *fiber.Ctx) error {
 	var data registerRequest
 
 	if err := c.BodyParser(&data); err != nil {
-		log.Printf("Не спарсил данные!\n err: %s", err)
+		ErrLogger.Printf("Не спарсил данные! %s\n", err)
 		return err
 	}
 
@@ -169,13 +185,13 @@ func RegisterPet(c *fiber.Ctx) error {
 	}
 
 	if err := database.DB.Create(&pet).Error; err != nil {
-		log.Printf("Error: Failed to create pet in DB\n")
+		ErrLogger.Printf("Failed to create pet %s in DB: %s", pet.Name, err.Error())
 		c.Status(fiber.StatusBadRequest)
 		return c.JSON(fiber.Map{
 			"status": "Error: Failed to create pet in DB",
 		})
 	}
 
-	log.Println("Питомец зарегистрирован!")
+	InfoLogger.Printf("Pet [%s] created success! %v\n", pet.Name, pet)
 	return c.SendStatus(fiber.StatusOK)
 }

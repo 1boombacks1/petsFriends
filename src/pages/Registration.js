@@ -17,7 +17,7 @@ const Registration = () => {
       return; // Прекратить выполнение функции в случае несовпадения паролей
     }
 
-    const response = await fetch("http://localhost:4000/api/register", {
+    const response = await fetch("http://localhost:4000/auth/register", {
       method: "POST",
       headers: { "Content-type": "application/json" },
       body: JSON.stringify({
@@ -83,7 +83,7 @@ const Registration = () => {
           {!passwordMatch && <p>Пароли не совпадают!</p>}
           <div className="policy">
             <input type="checkbox" />
-            <h3>I accept all terms & condition</h3>
+            <h3>Я подтверждаю, что люблю котят и щеночков!</h3>
           </div>
           <div className="input-box button">
             <input type="submit" value="Зарегистрироваться" />

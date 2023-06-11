@@ -13,11 +13,11 @@
 }
 body {
   background: url('../public/LoginRegistrationBackground.png');
+  background-attachment: fixed;
 }
 .App {
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
   justify-content: space-between;
 }
 .full-center {
@@ -28,6 +28,7 @@ body {
 }
 .flex {
   display: flex;
+  gap: 20px;
 }
 .sb {
   justify-content: space-between;
@@ -36,8 +37,7 @@ body {
   align-items: flex-end;
 }
 .content {
-  width: 100%;
-  height: 100%;
+  flex-grow: 1;
   min-height: 100vh;
   padding: 15px;
   display: flex;

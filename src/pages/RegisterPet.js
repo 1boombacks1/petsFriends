@@ -32,7 +32,7 @@ const RegisterPet = () => {
   const submit = async (e) => {
     e.preventDefault()
 
-    const response = await fetch("http://localhost:4000/api/registerPet", {
+    const response = await fetch("http://localhost:4000/api/user/registerPet", {
       method: "POST",
       headers: { "Content-type": "application/json" },
       credentials: 'include',

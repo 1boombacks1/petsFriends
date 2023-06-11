@@ -81,16 +81,16 @@ const Sidebar = () => {
   const location = useLocation();
   const modalRef = useRef();
   const [x, setX] = useState(false);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const submitLogoutCofirmation = async () => {
-    await fetch("http://localhost:4000/user/logout", {
+    await fetch("http://localhost:4000/api/user/logout", {
       method: "POST",
       headers: { "Content-type": "application/json" },
       credentials: "include",
     });
-    modalRef.current.classList.remove("active")
-    navigate('/login')
+    modalRef.current.classList.remove("active");
+    navigate("/login");
   };
 
   useEffect(() => {
@@ -125,53 +125,61 @@ const Sidebar = () => {
     <div className={`sidebar ${x ? "none" : ""}`}>
       <div ref={modalRef} className="shadowWrap">
         <div className="modalOut">
-          <h4 style={{margin:10}}>Вы уверены что хотите выйти?</h4>
+          <h4 style={{ margin: 10 }}>Вы уверены что хотите выйти?</h4>
           <div className="buttons">
             <button onClick={() => submitLogoutCofirmation()}>Да</button>
-            <button onClick={()=>modalRef.current.classList.remove("active")}>Нет</button>
+            <button onClick={() => modalRef.current.classList.remove("active")}>
+              Нет
+            </button>
           </div>
         </div>
       </div>
-      <div className="sidebar__logo">PetsFriends</div>
-      <div ref={sidebarRef} className="sidebar__menu">
-        <div
-          ref={indicatorRef}
-          className="sidebar__menu__indicator"
-          style={{
-            transform: `translateX(-50%) translateY(${
-              activeIndex * stepHeight
-            }px)`,
-          }}
-        ></div>
-        {sidebarNavItems.map((item, index) =>
-          item.isModal ? (
-            <div
-              onClick={() => modalRef.current.classList.add("active")}
-              key={index}
-              style={{cursor:'pointer'}}
-            >
+      <div>
+        <div className="sidebar__logo">PetsFriends</div>
+        <div ref={sidebarRef} className="sidebar__menu">
+          <div
+            ref={indicatorRef}
+            className="sidebar__menu__indicator"
+            style={{
+              transform: `translateX(-50%) translateY(${
+                activeIndex * stepHeight
+              }px)`,
+            }}
+          ></div>
+          {sidebarNavItems.map((item, index) =>
+            item.isModal ? (
               <div
-                className={`sidebar__menu__item ${
-                  activeIndex === index ? "active" : ""
-                }`}
+                onClick={() => modalRef.current.classList.add("active")}
+                key={index}
+                style={{ cursor: "pointer" }}
               >
-                <div className="sidebar__menu__item__icon">{item.icon}</div>
-                <div className="sidebar__menu__item__text">{item.display}</div>
+                <div
+                  className={`sidebar__menu__item ${
+                    activeIndex === index ? "active" : ""
+                  }`}
+                >
+                  <div className="sidebar__menu__item__icon">{item.icon}</div>
+                  <div className="sidebar__menu__item__text">
+                    {item.display}
+                  </div>
+                </div>
               </div>
-            </div>
-          ) : (
-            <Link to={item.to} key={index}>
-              <div
-                className={`sidebar__menu__item ${
-                  activeIndex === index ? "active" : ""
-                }`}
-              >
-                <div className="sidebar__menu__item__icon">{item.icon}</div>
-                <div className="sidebar__menu__item__text">{item.display}</div>
-              </div>
-            </Link>
-          )
-        )}
+            ) : (
+              <Link to={item.to} key={index}>
+                <div
+                  className={`sidebar__menu__item ${
+                    activeIndex === index ? "active" : ""
+                  }`}
+                >
+                  <div className="sidebar__menu__item__icon">{item.icon}</div>
+                  <div className="sidebar__menu__item__text">
+                    {item.display}
+                  </div>
+                </div>
+              </Link>
+            )
+          )}
+        </div>
       </div>
       <h2 className="sloganText">
         Find love friends for your four-legged friend.{" "}

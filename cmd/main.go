@@ -8,11 +8,14 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 
 	"d0c/petsFriends/database"
+	"d0c/petsFriends/logs"
 	"d0c/petsFriends/routes"
 )
 
 func main() {
 	database.Init()
+	logs.Init()
+
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{

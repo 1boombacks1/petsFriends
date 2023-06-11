@@ -1,0 +1,163 @@
+.content.profile {
+  padding: 0 136px 77px;
+}
+.background-profile {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 168px;
+  background: url("../img/back.png");
+  background-size: cover;
+  z-index: -1;
+}
+.profileImg {
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.sexicon {
+  width: 21px;
+  margin-left: 15px;
+}
+.baseinfo {
+  margin: 75px 0;
+  align-items: flex-end;
+}
+.profile h2 {
+  font-size: 32px;
+}
+.profile p {
+  max-width: 745px;
+  font-size: 20px;
+  margin: 16px 0 19px;
+}
+.profile textarea {
+  border: 1px solid #e9e9e9;
+  border-radius: 12px;
+  width: 100%;
+  height: 170px;
+  resize: none;
+  font-size: 20px;
+  margin: 16px 0 19px;
+  padding: 5px;
+}
+.baseinfo p {
+  color: #b2b2b2;
+  font-size: 20px;
+}
+.profile button {
+  border: 1.31px solid #b0b0b0;
+  border-radius: 31.4549px;
+  color: #4b4b4c;
+  font-size: 14px;
+  padding: 15px 30px;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.profile button.active {
+  background-color: #6c63ff;
+  color: #fff;
+  border-color: #fff;
+}
+.photos {
+  margin: 30px 0;
+  max-width: 800px;
+  flex-wrap: wrap;
+}
+.photos img,
+.addImg {
+  width: 248px;
+  height: 344px;
+  object-fit: cover;
+  border-radius: 14px;
+}
+.addImg {
+  border: 1px solid #e9e9e9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+.addImg span {
+  font-size: 60px;
+  color: #b0b0b0;
+  margin: auto;
+  display: block;
+}
+.addImg input {
+  position: absolute;
+  opacity: 0;
+  transform: scale(0);
+}
+.option,
+.profile label {
+  position: relative;
+  margin: 16px 39px 30px 25px;
+  font-size: 20px;
+}
+.profile label {
+  margin-left: 0;
+  cursor: pointer;
+}
+.option::after,
+.profile input[type="radio"]::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: -25px;
+  width: 18px;
+  height: 18px;
+  background: #ffd027;
+  border-radius: 5.1px;
+}
+.award::after {
+  width: 10px;
+  height: 10px;
+  background: #534adf;
+  border-radius: 50%;
+}
+.profile input[type="radio"] {
+  margin-right: 20px;
+}
+.profile input[type="radio"]::after {
+  left: 0;
+  border: 1.69px solid #b0b0b0;
+  background: #fff;
+}
+.profile input[type="radio"]:checked::after {
+  border: none;
+  background: #ffd027;
+}
+.option.award {
+  margin: 0 0 10px 25px;
+}
+input.award {
+  border: 0.5px solid #e9e9e9;
+  border-radius: 10px;
+  padding: 7px;
+}
+.awardform{
+    display: flex;
+    align-items: center;
+}
+.mark {
+  width: 10px;
+  height: 10px;
+  background: #534adf;
+  border-radius: 50%;
+  margin-right: 15px;
+}
+.go{
+    border-radius: 50%;
+    padding: 5px;
+    border: solid 1px #e9e9e9;
+    width: 31px;
+    height: 31px;
+    text-align: center;
+    margin-left: 5px;
+    cursor: pointer;
+}
