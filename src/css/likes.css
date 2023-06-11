@@ -1,0 +1,50 @@
+.content {
+  padding: 0 136px 77px;
+}
+.petsbox {
+  margin: 49px 0 88px;
+  gap: 24px 40px;
+}
+.candidate {
+  position: relative;
+  padding-top: 90.5px;
+  margin-top: 90.5px;
+  background: #ffffff;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
+  border-bottom-left-radius: 30px;
+  border-bottom-right-radius: 30px;
+}
+.candidate > img,
+.likes img {
+  position: absolute;
+  left: 0;
+  top: -90.5px;
+  width: 181px;
+  height: 181px;
+  border-radius: 50%;
+  object-fit: cover;
+  filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));
+}
+.likes img {
+  position: static;
+}
+h3 {
+  margin: 10px 0;
+  font-size: 20px;
+  text-align: center;
+}
+.candidate button {
+  flex-grow: 1;
+  border: none;
+  border-top: #b0b0b0 solid 1px;
+  background: none;
+  padding: 15px 33px;
+}
+.candidate button:first-child {
+  border-right: solid 1px #b0b0b0;
+}
+.candidate button img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}

@@ -1,5 +1,5 @@
 .content.profile {
-  padding: 0 136px 77px;
+  padding: 75px 136px 77px;
 }
 .background-profile {
   position: absolute;
@@ -22,11 +22,8 @@
   margin-left: 15px;
 }
 .baseinfo {
-  margin: 75px 0;
+  margin-bottom: 75px;
   align-items: flex-end;
-}
-.profile h2 {
-  font-size: 32px;
 }
 .profile p {
   max-width: 745px;

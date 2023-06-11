@@ -65,7 +65,7 @@ h2 {
   font-family: sans-serif;
 }
 
-.infoText {
+.content .infoText {
   width: 200px;
   margin: 15px 0 5px;
   justify-content: center;

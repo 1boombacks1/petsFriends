@@ -7,6 +7,7 @@ import Login from './pages/Login'
 import RegisterPet from './pages/RegisterPet'
 import Sidebar from './components/SideBar'
 import Profile from './pages/Profile'
+import Likes from './pages/Likes'
 function App() {
 
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path='/login' element={<Login />} />
           <Route path='/registerPet' element={<RegisterPet />} />
           <Route path='/profile' element={<Profile />} />
+          <Route path='/likes' element={<Likes />} />
         </Routes>
         {/* <Footer /> */}
       </BrowserRouter>
