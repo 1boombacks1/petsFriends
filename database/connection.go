@@ -31,7 +31,11 @@ func Init() {
 
 	DB = connection
 
-	connection.AutoMigrate(&models.User{}, &models.Pet{}, &models.Pet{})
+	err = connection.AutoMigrate(&models.User{}, &models.Pet{}, &models.Pet{}, &models.Image{})
+	if err != nil {
+		log.Fatal("Migration failed: \n", err.Error())
+	}
+	log.Print("🚀 Database successed connection!")
 }
 
 func loadEnv() {

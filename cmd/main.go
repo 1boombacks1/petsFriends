@@ -18,6 +18,8 @@ func main() {
 
 	app := fiber.New()
 
+	app.Static("/static", "../profileImages")
+
 	app.Use(cors.New(cors.Config{
 		AllowCredentials: true,
 		AllowOrigins:     "http://localhost:3000",

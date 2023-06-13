@@ -10,7 +10,7 @@ import Sidebar from '../components/SideBar'
 
 const Main = () => {
   return (
-    <div className='content sb' >
+    <div className='content sb' style={{padding: 0}}>
       <SwiperTinder />
       <div style={{ width: '100%' }}>
         {/* <Swiper

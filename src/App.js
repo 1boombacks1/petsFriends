@@ -23,6 +23,7 @@ function App() {
           <Route path='/registerPet' element={<RegisterPet />} />
           <Route path='/profile' element={<Profile />} />
           <Route path='/likes' element={<Likes />} />
+          <Route path='/messages' element={<Profile />} />
         </Routes>
         {/* <Footer /> */}
       </BrowserRouter>

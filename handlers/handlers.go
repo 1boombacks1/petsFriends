@@ -4,6 +4,7 @@ import (
 	"d0c/petsFriends/database"
 	. "d0c/petsFriends/logs"
 	"d0c/petsFriends/models"
+	"d0c/petsFriends/utils"
 	"os"
 	"strconv"
 	"time"
@@ -12,15 +13,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/crypto/bcrypt"
 )
-
-type registerRequest struct {
-	TypePet   bool   `json:"petType"`
-	Name      string `json:"name"`
-	Age       int    `json:"age"`
-	Sex       bool   `json:"sex"`
-	Breed     int    `json:"breed"`
-	IsMeeting bool   `json:"goal"`
-}
 
 func Register(c *fiber.Ctx) error {
 	var data map[string]string
@@ -45,7 +37,7 @@ func Register(c *fiber.Ctx) error {
 		})
 	}
 
-	InfoLogger.Printf("User [%s,%s,%v] created success!\n", user.Login, user.Name, user.Password)
+	InfoLogger.Printf("User [%s,%s] created success!\n", user.Login, user.Name)
 
 	return c.JSON(fiber.Map{
 		"status": "ok",
@@ -54,6 +46,7 @@ func Register(c *fiber.Ctx) error {
 }
 
 func Login(c *fiber.Ctx) error {
+	//Create payload for data
 	var data map[string]string
 
 	if err := c.BodyParser(&data); err != nil {
@@ -151,37 +144,38 @@ func GetBreeds(c *fiber.Ctx) error {
 }
 
 func RegisterPet(c *fiber.Ctx) error {
-	tokenFromCookie := c.Cookies("jwt")
+	user := c.Locals("user").(models.UserResponse)
 
-	token, err := jwt.ParseWithClaims(tokenFromCookie, &jwt.StandardClaims{}, func(t *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("SECRET_KEY")), nil
-	})
-	if err != nil {
-		ErrLogger.Println("Unauthorized user")
-		c.Status(fiber.StatusUnauthorized)
-		return c.JSON(fiber.Map{
-			"status": "unauthorized",
-		})
-	}
+	var payload models.RegisterRequest
 
-	claims := token.Claims.(*jwt.StandardClaims)
-
-	var data registerRequest
-
-	if err := c.BodyParser(&data); err != nil {
-		ErrLogger.Printf("Не спарсил данные! %s\n", err)
+	if err := c.BodyParser(&payload); err != nil {
+		ErrLogger.Printf("Не спарсил данные! %s", err)
 		return err
 	}
 
-	userId, _ := strconv.Atoi(claims.Issuer)
+	img, err := c.FormFile("img")
+	if err != nil {
+		ErrLogger.Printf("Failed to get file from client: %v", err)
+		return err
+	}
+	db_path := utils.MakeImagePath(user.ID, img.Filename)
+
+	if err = c.SaveFile(img, os.Getenv("IMAGES_PATH")+db_path); err != nil {
+		ErrLogger.Printf("Failed to save image on server: %v", err)
+		return err
+	}
+
 	pet := models.Pet{
-		TypePet: data.TypePet,
-		Name:    data.Name,
-		Age:     uint(data.Age),
-		Sex:     data.Sex,
-		BreedID: uint(data.Breed),
-		Mating:  data.IsMeeting,
-		UserID:  uint(userId),
+		TypePet: payload.TypePet,
+		Name:    payload.Name,
+		Age:     uint(payload.Age),
+		Sex:     payload.Sex,
+		BreedID: uint(payload.Breed),
+		Mating:  payload.IsMeeting,
+		UserID:  user.ID,
+		Images: []models.Image{
+			{Path: db_path},
+		},
 	}
 
 	if err := database.DB.Create(&pet).Error; err != nil {
@@ -192,6 +186,70 @@ func RegisterPet(c *fiber.Ctx) error {
 		})
 	}
 
-	InfoLogger.Printf("Pet [%s] created success! %v\n", pet.Name, pet)
+	InfoLogger.Printf(
+		"Питомец пользователя [%d] зарегистрирован [Имя: %s,Пол: %v,Тип: %v,Порода: %v,Цель: %v,Возраст: %d]",
+		user.ID,
+		payload.Name,
+		payload.Sex,
+		payload.TypePet,
+		payload.Breed,
+		payload.IsMeeting,
+		payload.Age)
+
 	return c.SendStatus(fiber.StatusOK)
+}
+
+// func GetProfilePetById(c *fiber.Ctx) error {
+// 	user_id, _ := strconv.Atoi(c.Params("id"))
+// 	// var user models.User
+// 	var pet models.Pet
+// 	// database.DB.Preload("Pets").Where("id = ?", user_id).First(&user)
+// 	if err := database.DB.Where("user_id = ?", user_id).First(&pet).Error; err != nil {
+// 		ErrLogger.Printf("Не удалось найти питомца пользователя: %v", err)
+// 		return err
+// 	}
+
+// 	InfoLogger.Printf("Питомец: %v", pet)
+
+// 	return c.JSON(pet)
+// }
+
+func GetMe(c *fiber.Ctx) error {
+	user := c.Locals("user").(models.UserResponse)
+
+	var userPet models.Pet
+
+	if err := database.DB.Preload("Breed").Preload("Images").
+		Where("user_id = ?", user.ID).Find(&userPet).Error; err != nil {
+		ErrLogger.Printf("Не удалось найти питомца пользователя: %v", err)
+		return err
+	}
+
+	photos := make([]string, 0)
+	for _, img := range userPet.Images {
+		photos = append(photos, img.Path)
+	}
+
+	awards := make([]string, 1)
+	for _, award := range userPet.Awards {
+		awards = append(awards, award.AwardName)
+	}
+
+	InfoLogger.Printf(
+		"Питомец - [name: %s, sex: %v, breed: %s, age: %d, photos: %v, goal: %v, pedigree: %v, awards: %v]",
+		userPet.Name, userPet.Sex, userPet.Breed.BreedName,
+		userPet.Age, photos, userPet.Mating, userPet.Pedigree, userPet.Awards,
+	)
+	InfoLogger.Print(awards)
+	return c.JSON(models.PetResponse{
+		Name:        userPet.Name,
+		Sex:         userPet.Sex,
+		Breed:       userPet.Breed.BreedName,
+		Age:         userPet.Age,
+		AboutMeInfo: userPet.AboutMeInfo,
+		Photos:      photos,
+		Goal:        userPet.Mating,
+		Pedigree:    userPet.Pedigree,
+		Awards:      awards,
+	})
 }

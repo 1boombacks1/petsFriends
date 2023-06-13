@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import '../css/registerPet.css'
 import { Navigate } from 'react-router-dom';
 
@@ -10,14 +10,21 @@ const RegisterPet = () => {
   const [breed, setBreed] = useState(0);
   const [goal, setGoal] = useState();
 
+  const [selectedImg, setSelectedImg] = useState(null)
+  const [previewURL, setPreviewURL] = useState('')
+
   const [breeds, setBreeds] = useState([]);
+
+  const filePicker = useRef(null)
 
   const [ok, setOk] = useState(false);
 
   useEffect(() => {
     const fetchBreeds = async () => {
         try {
-          const response = await fetch('http://localhost:4000/api/breeds');
+          const response = await fetch('http://localhost:4000/api/breeds', {
+            credentials: "include"
+          });
           const data = await response.json();
           setBreeds(data);
           console.log(data)
@@ -32,18 +39,23 @@ const RegisterPet = () => {
   const submit = async (e) => {
     e.preventDefault()
 
+    if (!selectedImg) {
+      alert("Загрузите фото, без фото невозможно продолжить!")
+      return
+    }
+    const formData = new FormData();
+    formData.append("petType", petType)
+    formData.append("name", name)
+    formData.append("age", age)
+    formData.append("sex", sex)
+    formData.append("breed", breed)
+    formData.append("goal", goal)
+    formData.append("img", selectedImg)
+
     const response = await fetch("http://localhost:4000/api/user/registerPet", {
       method: "POST",
-      headers: { "Content-type": "application/json" },
       credentials: 'include',
-      body: JSON.stringify({
-        petType,
-        name,
-        age,
-        sex,
-        breed,
-        goal
-      }),
+      body: formData,
     });
 
     if (response.status === 502) {
@@ -52,6 +64,24 @@ const RegisterPet = () => {
     }
 
     setOk(true);
+  }
+
+  const handleFileChange = (img) => {
+    const file = img.target.files[0]
+    setSelectedImg(file)
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setPreviewURL(reader.result)
+      }
+      reader.readAsDataURL(file)
+    } else {
+      setPreviewURL("")
+    }
+  }
+
+  const handlePickPhoto = () => {
+    filePicker.current.click()
   }
 
   if (ok) {
@@ -66,6 +96,12 @@ const RegisterPet = () => {
       <div className="form-container">
         <form onSubmit={submit} className="registration-form">
           <h1>Профиль питомца</h1>
+            <label htmlFor="photo">Фото:</label>
+            <input ref={filePicker} className='hidden' onChange={handleFileChange} type='file' accept=".jpeg,.png,.jpg" />
+            {previewURL && (
+              <img src={previewURL} alt='Preview'/>
+            )}
+            <button type='button' className='load-button' onClick={handlePickPhoto}>Загрузить фото</button>
           <label htmlFor="name">Кличка:</label>
           <input
             type="text"
