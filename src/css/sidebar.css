@@ -1,5 +1,5 @@
 * {
-  font-family: "Gilroy", sans-serif;
+  font-family: 'Gilroy', sans-serif;
   font-weight: 200;
 }
 
@@ -24,14 +24,25 @@ a {
 }
 .modalOut {
   background: #fff;
-  border-radius: 30px;
+  border-radius: 20px;
   padding: 20px;
   box-shadow: 0px 0px 30px 0px rgba(0, 0, 0, 0.1);
 }
 .modalOut .buttons {
   display: flex;
-  gap: 30px;
+  gap: 25px;
   margin: 0;
+}
+.modalOut .buttons button {
+  flex-grow: 1;
+  border: none;
+  border-radius: 5px;
+  color: #fff;
+  transition: 200ms;
+  background-color: #524bc9;
+  padding: 10px 20px;
+  box-shadow: 0px 0px 30px 0px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
 }
 .sidebar {
   display: flex;

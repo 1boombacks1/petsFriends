@@ -109,10 +109,6 @@
 .buttons .no {
   background: #ff6584;
 }
-.buttons button:hover {
-  transform: scale(1.05);
-  background: #6e74b4;
-}
 .description {
   position: absolute;
   bottom: -100%;
