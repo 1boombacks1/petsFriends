@@ -1,124 +1,166 @@
-h2 {
-  font-family: 'Gilroy', cursive;
-  font-weight: 200;
+.swiperwrap .infoText {
+  width: 300px;
+  margin-bottom: 15px;
+  text-align: center;
+  font-size: 20px;
+  color: #a0a0a0;
 }
-
 .swiperwrap {
   overflow: hidden;
   position: relative;
   z-index: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
 }
-
-.swiperwrap > div {
+.cardContainer {
+  position: relative;
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 }
-
-.row {
-  flex-direction: row !important;
-}
-
-.row > * {
-  margin: 5px;
-}
 .swipe {
   position: absolute;
+  top: 0;
+  left: 0;
 }
-
+.swipe:first-child .cardwrap {
+  box-shadow: 0px 8.62086px 20.4835px rgba(0, 0, 0, 0.25);
+}
+.swipe:active .cardwrap {
+  box-shadow: 0px 8.62086px 20.4835px rgba(0, 0, 0, 0.25);
+}
+.swipe:active .cardwrap.left {
+  box-shadow: 0px 8.62086px 20.4835px #ff6584;
+}
+.swipe:active .cardwrap.right {
+  box-shadow: 0px 8.62086px 20.4835px #6c63ff;
+}
+.cardwrap,
 .cardContainer {
-  width: 90vw;
-  max-width: 327.5px;
-  height: 720px;
+  width: 100vw;
+  height: 80vh;
+  max-width: 484px;
+  max-height: 857.16px;
 }
-
 .cardwrap {
+  padding: 23.4px 23.4px 140.4px;
   background: #fff;
-  padding: 20px 20px 100px;
-  box-shadow: 0px 3px 10.4835px rgba(0, 0, 0, 0.1);
   border-radius: 41.8728px;
 }
 .card {
-  position: relative;
-  background-color: #fff;
-  width: 80vw;
-  max-width: 287.5px;
-  height: 580px;
+  width: 100%;
+  height: 100%;
   box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.1);
   border-radius: 20px;
   background-size: cover;
   background-position: center;
   user-select: none;
-}
-
-.cardContent {
-  width: 100%;
-  height: 100%;
-}
-
-.card h3 {
-  position: absolute;
-  top: 0;
-  margin: 10px;
-  color: #fff;
-  font-family: sans-serif;
-}
-
-.content .infoText {
-  width: 200px;
-  margin: 15px 0 5px;
-  justify-content: center;
-  text-align: center;
-  font-size: 20px;
-  display: flex;
-  color: #a0a0a0;
-  animation-name: popup;
-  animation-duration: 800ms;
-}
-
-.buttons {
+  padding: 20px;
   position: relative;
-  margin: 20px;
-  display: flex;
-  gap: 40px;
-  margin-top: -130px;
-  z-index: auto;
+  overflow: hidden;
 }
-
-.buttons button {
-  flex-shrink: 0;
-  padding: 10px;
-  border-radius: 5px;
-  border: none;
+.cardwrap h3 {
+  margin: 0;
+  font-size: 29.5573px;
   color: #fff;
-  font-size: 18px;
-  background-color: #9198e5;
-  transition: 200ms;
-  margin: 10px;
-  font-weight: bolder;
-  width: 160px;
-  box-shadow: 0px 0px 30px 0px rgba(0, 0, 0, 0.1);
-  user-select: none;
+  font-family: 'Gilroy', sans-serif;
+  text-align: left;
+}
+.buttons {
+  display: flex;
+  justify-content: space-evenly;
+  margin-top: -10px;
+  position: relative;
 }
 .buttons .round-btn {
-  padding: 30px;
+  width: 122.4px;
+  height: 122.4px;
   border-radius: 50%;
   display: flex;
+  justify-content: center;
+  align-items: center;
   user-select: none;
   cursor: pointer;
 }
 .buttons img {
-  width: 35px;
+  width: 43.75%;
 }
 .buttons .yes {
-  background: #6C63FF;
+  background: #6c63ff;
 }
 .buttons .no {
   background: #ff6584;
 }
-
 .buttons button:hover {
   transform: scale(1.05);
   background: #6e74b4;
+}
+.description {
+  position: absolute;
+  bottom: -100%;
+  left: 0;
+  height: 42%;
+  padding: 20px;
+  background: #ffffff;
+  box-shadow: 0px -5px 5px rgba(0, 0, 0, 0.1);
+  border-top-left-radius: 20.1237px;
+  border-bottom-left-radius: 20.1237px;
+  overflow: auto;
+  opacity: 0;
+  z-index: -1;
+  transition: 0.5s ease;
+}
+.description.active {
+  z-index: 0;
+  opacity: 1;
+  bottom: 0%;
+}
+.description .sexicon {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  width: 18px;
+}
+.description::-webkit-scrollbar {
+  width: 3.77px;
+}
+.description::-webkit-scrollbar-track {
+  background: #e1e1e1;
+}
+.description::-webkit-scrollbar-thumb {
+  background: #a8a8a8;
+  border-radius: 8px;
+}
+.description h3 {
+  color: #252525;
+  font-weight: bold;
+}
+.description p {
+  margin: 15px 0 20px;
+}
+.description p.option {
+  margin: 15px 0 20px 25px;
+}
+.description p.option.award {
+  margin: 5px 0 0px 25px;
+}
+@media (max-width: 1600px) {
+  .cardwrap,
+  .cardContainer {
+    width: 21vw;
+  }
+  .cardwrap h3 {
+    font-size: 20px;
+  }
+  .cardwrap {
+    padding-bottom: 89.4px;
+  }
+  .buttons .round-btn {
+    width: 80px;
+    height: 80px;
+  }
 }
