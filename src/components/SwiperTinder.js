@@ -103,56 +103,60 @@ function SwiperTinder() {
       <link href='https://fonts.googleapis.com/css?family=Damion&display=swap' rel='stylesheet' />
       <link href='https://fonts.googleapis.com/css?family=Alatsi&display=swap' rel='stylesheet' />
       <h2 className='infoText'>Swipe right - if you like, if not swipe left. Double Click to see description</h2>
-      <div className='cardContainer'>
-        {db.map((character, index) => (
-          <TinderCard
-            ref={childRefs[index]}
-            className='swipe'
-            key={character.name}
-            preventSwipe={['up', 'down']}
-            onSwipe={(dir) => swiped(dir, character.name, index)}
-            onCardLeftScreen={() => outOfFrame(character.name, index)}
-            onSwipeRequirementFulfilled={(i) => onChangeSide(i, myRefs.current[index].current)}
-          >
-            <div className='cardwrap' ref={myRefs.current[index]} onDoubleClick={() => onDbClick(myRefs.current[index].current)}>
-              <div style={{ backgroundImage: 'url(' + character.url + ')' }} className='card'>
-                <h3>{character.name}</h3>
-                <div className='description pressable'>
-                  <img className='sexicon' alt='' src={false ? boy : girl} />
-                  <div>
-                    <h3>Обо мне</h3>
-                    <p>
-                      Doberman Pinscher is very sweet and affectionate with the family children, provided he has been raised with them. He views the
-                      kids as the puppies in the packA Doberman Pinscher is a fantastic guard dog that will be the ultimate protector for your
-                      kids.The breed originated in Germany and quickly gained popularity in
-                    </p>
+      <div className='swipeflex'>
+        <div className='bigword'>NO</div>
+        <div className='cardContainer'>
+          {db.map((character, index) => (
+            <TinderCard
+              ref={childRefs[index]}
+              className='swipe'
+              key={character.name}
+              preventSwipe={['up', 'down']}
+              onSwipe={(dir) => swiped(dir, character.name, index)}
+              onCardLeftScreen={() => outOfFrame(character.name, index)}
+              onSwipeRequirementFulfilled={(i) => onChangeSide(i, myRefs.current[index].current)}
+            >
+              <div className='cardwrap' ref={myRefs.current[index]} onDoubleClick={() => onDbClick(myRefs.current[index].current)}>
+                <div style={{ backgroundImage: 'url(' + character.url + ')' }} className='card'>
+                  <h3>{character.name}</h3>
+                  <div className='description pressable'>
+                    <img className='sexicon' alt='' src={false ? boy : girl} />
+                    <div>
+                      <h3>Обо мне</h3>
+                      <p>
+                        Doberman Pinscher is very sweet and affectionate with the family children, provided he has been raised with them. He views the
+                        kids as the puppies in the packA Doberman Pinscher is a fantastic guard dog that will be the ultimate protector for your
+                        kids.The breed originated in Germany and quickly gained popularity in
+                      </p>
+                    </div>
+                    <div>
+                      <h3>Цель</h3>
+                      <p className='option'>Лютый секс</p>
+                    </div>
+                    <div>
+                      <h3>Родословная</h3>
+                      <p className='option'>Есть</p>
+                    </div>
+                    <div>
+                      <h3>Награды</h3>
+                      <p className='option award'>AFA</p>
+                      <p className='option award'>AFA</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3>Цель</h3>
-                    <p className='option'>Лютый секс</p>
+                </div>
+                <div className='buttons'>
+                  <div className='round-btn no' onClick={() => swipe('left')}>
+                    <img alt='' src={require('../img/no.png')} />
                   </div>
-                  <div>
-                    <h3>Родословная</h3>
-                    <p className='option'>Есть</p>
-                  </div>
-                  <div>
-                    <h3>Награды</h3>
-                    <p className='option award'>AFA</p>
-                    <p className='option award'>AFA</p>
+                  <div className='round-btn yes' onClick={() => swipe('right')}>
+                    <img alt='' src={require('../img/yes.png')} />
                   </div>
                 </div>
               </div>
-              <div className='buttons'>
-                <div className='round-btn no' onClick={() => swipe('left')}>
-                  <img alt='' src={require('../img/no.png')} />
-                </div>
-                <div className='round-btn yes' onClick={() => swipe('right')}>
-                  <img alt='' src={require('../img/yes.png')} />
-                </div>
-              </div>
-            </div>
-          </TinderCard>
-        ))}
+            </TinderCard>
+          ))}
+        </div>
+        <div className='bigword'>YES</div>
       </div>
     </div>
   )

@@ -1,7 +1,7 @@
-@import url("https://fonts.googleapis.com/css2?family=Lobster&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
 @font-face {
-  font-family: "Gilroy";
-  src: url("../public/Gilroy-Regular.ttf");
+  font-family: 'Gilroy';
+  src: url('../public/Gilroy-Regular.ttf');
   font-weight: 400;
   font-style: normal;
 }
@@ -9,10 +9,10 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Gilroy", cursive, sans-serif;
+  font-family: 'Gilroy', cursive, sans-serif;
 }
 body {
-  background: url("../public/LoginRegistrationBackground.png");
+  background: url('../public/LoginRegistrationBackground.png');
   background-attachment: fixed;
 }
 .App {
@@ -31,7 +31,7 @@ body {
   display: flex;
   gap: 20px;
 }
-.wrap{
+.wrap {
   flex-wrap: wrap;
 }
 .sb {
