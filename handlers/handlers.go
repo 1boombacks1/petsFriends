@@ -5,8 +5,10 @@ import (
 	. "d0c/petsFriends/logs"
 	"d0c/petsFriends/models"
 	"d0c/petsFriends/utils"
+	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -219,7 +221,7 @@ func GetMe(c *fiber.Ctx) error {
 
 	var userPet models.Pet
 
-	if err := database.DB.Preload("Breed").Preload("Images").
+	if err := database.DB.Preload("Breed").Preload("Images").Preload("Awards").
 		Where("user_id = ?", user.ID).Find(&userPet).Error; err != nil {
 		ErrLogger.Printf("Не удалось найти питомца пользователя: %v", err)
 		return err
@@ -240,7 +242,7 @@ func GetMe(c *fiber.Ctx) error {
 		userPet.Name, userPet.Sex, userPet.Breed.BreedName,
 		userPet.Age, photos, userPet.Mating, userPet.Pedigree, userPet.Awards,
 	)
-	InfoLogger.Print(awards)
+
 	return c.JSON(models.PetResponse{
 		Name:        userPet.Name,
 		Sex:         userPet.Sex,
@@ -252,4 +254,87 @@ func GetMe(c *fiber.Ctx) error {
 		Pedigree:    userPet.Pedigree,
 		Awards:      awards,
 	})
+}
+
+func UpdateUserInfo(c *fiber.Ctx) error {
+	user := c.Locals("user").(models.UserResponse)
+
+	var payload models.ProfileInfoUpdateRequest
+
+	if err := c.BodyParser(&payload); err != nil {
+		ErrLogger.Printf("Не спарсил данные! %s", err)
+		return err
+	}
+
+	photoPaths := make([]models.Image, 0)
+
+	for i := 0; i < 5; i++ {
+		img, err := c.FormFile(fmt.Sprintf("photo%d", i))
+		if err != nil {
+			break
+		}
+
+		photoPath := utils.MakeImagePath(user.ID, img.Filename)
+		InfoLogger.Print(photoPath)
+		if err = c.SaveFile(img, os.Getenv("IMAGES_PATH")+photoPath); err != nil {
+			ErrLogger.Printf("Failed to save image %s on server: %v", photoPath, err)
+			return err
+		}
+		photoPaths = append(photoPaths, models.Image{Path: photoPath})
+		InfoLogger.Printf("Saved image %v on server", photoPath)
+	}
+
+	awards := make([]models.Award, 0)
+	for _, award := range strings.Split(payload.Awards, ",") {
+		awards = append(awards, models.Award{AwardName: award})
+	}
+
+	var pet models.Pet
+
+	//*Обновление информации о питомце в бд
+	if err := database.DB.Where(models.Pet{UserID: user.ID}).Assign(models.Pet{
+		AboutMeInfo: payload.AboutMeInfo,
+		Mating:      payload.Goal,
+		Pedigree:    payload.Pedigree,
+	}).FirstOrCreate(&pet).Error; err != nil {
+		ErrLogger.Printf("Failed to update information in DB: %v", err)
+		return err
+	}
+
+	InfoLogger.Printf("Информация питомца id=%d [AboutMeInfo,Goal,Pedigree] обновлена", pet.ID)
+
+	//*Удаление изображений, если таковы имеются в списке
+	for _, imgID := range strings.Split(payload.DeletedImgs, ",") {
+		// var img models.Image
+		// id, _ := strconv.Atoi(imgID)
+		// database.DB.Model(&pet).Association("Images").Find(&img, "path LIKE = ?", id + 1)
+		// database.DB.Unscoped().Model(&pet).Association("Images").Unscoped().Clear()
+		database.DB.Preload("Images").Model(&pet).Delete(&pet.Images, "images.path LIKE = ?", imgID)
+		InfoLogger.Printf("Deleted %s img", imgID)
+	}
+
+	//*Добавления наград в бд
+	//Model(&pet) -> Туда передаем объект владельца, который будем изменять(дополнять/удалять)
+	//Association("Awards") -> устанавливаем связь с моделью Award
+	//Find(&temp, ...) -> Кладем в temp значение, если найдено
+	//SELECT * FROM awards WHERE award_name = ... AND pet_id = ... (pet_id берется из Model(&pet))
+	for _, award := range awards {
+		var temp models.Award
+		database.DB.Model(&pet).Association("Awards").Find(&temp, "award_name = ?", award.AwardName)
+		if temp.ID == 0 {
+			database.DB.Model(&pet).Association("Awards").Append(&award)
+		}
+	}
+	InfoLogger.Printf("Информация питомца id=%d [Awards] обновлена", pet.ID)
+
+	for _, photo := range photoPaths {
+		var temp models.Image
+		database.DB.Model(&pet).Association("Images").Find(&temp, "path = ?", photo.Path)
+		if temp.ID == 0 {
+			database.DB.Model(&pet).Association("Images").Append(&photo)
+		}
+	}
+	InfoLogger.Printf("Информация питомца id=%d [Photos] обновлена", pet.ID)
+
+	return c.JSON(payload)
 }

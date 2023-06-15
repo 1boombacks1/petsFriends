@@ -54,6 +54,14 @@ type RegisterRequest struct {
 	IsMeeting bool   `json:"goal"`
 }
 
+type ProfileInfoUpdateRequest struct {
+	AboutMeInfo string `json:"aboutMeInfo"`
+	Goal        bool   `json:"goal"`
+	Pedigree    bool   `json:"pedigree"`
+	Awards      string `json:"awards"`
+	DeletedImgs string `json:"deletedPhotos"`
+}
+
 //responses
 type UserResponse struct {
 	ID    uint   `json:"id,omitempty"`

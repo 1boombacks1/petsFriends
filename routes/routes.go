@@ -26,6 +26,7 @@ func Setup(app *fiber.App) {
 			user.Post("/logout", handlers.Logout)
 			// user.Get("/:id", handlers.GetProfilePetById)
 			user.Get("/getMe", handlers.GetMe)
+			user.Patch("/updateInfo", handlers.UpdateUserInfo)
 		}
 	}
 

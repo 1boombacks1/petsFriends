@@ -31,7 +31,7 @@ func Init() {
 
 	DB = connection
 
-	err = connection.AutoMigrate(&models.User{}, &models.Pet{}, &models.Pet{}, &models.Image{})
+	err = connection.AutoMigrate(&models.User{}, &models.Pet{}, &models.Pet{}, &models.Image{}, &models.Award{})
 	if err != nil {
 		log.Fatal("Migration failed: \n", err.Error())
 	}
