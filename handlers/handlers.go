@@ -304,13 +304,15 @@ func UpdateUserInfo(c *fiber.Ctx) error {
 	InfoLogger.Printf("Информация питомца id=%d [AboutMeInfo,Goal,Pedigree] обновлена", pet.ID)
 
 	//*Удаление изображений, если таковы имеются в списке
-	for _, imgID := range strings.Split(payload.DeletedImgs, ",") {
-		// var img models.Image
-		// id, _ := strconv.Atoi(imgID)
-		// database.DB.Model(&pet).Association("Images").Find(&img, "path LIKE = ?", id + 1)
-		// database.DB.Unscoped().Model(&pet).Association("Images").Unscoped().Clear()
-		database.DB.Preload("Images").Model(&pet).Delete(&pet.Images, "images.path LIKE = ?", imgID)
-		InfoLogger.Printf("Deleted %s img", imgID)
+	//Сделано наполовину
+	deletedImgs := strings.Split(c.FormValue("deletedPhotos"), ",")
+	for _, imgID := range deletedImgs {
+		var deletedImg models.Image
+		database.DB.Unscoped().
+			Where("pet_id = ? AND path LIKE ?", pet.ID, "%/"+imgID+".%").First(&deletedImg).Delete(&models.Image{})
+		if err := utils.DeleteImage(deletedImg.Path); err != nil {
+			ErrLogger.Printf("Не удалось удалить фото %s", deletedImg.Path)
+		}
 	}
 
 	//*Добавления наград в бд

@@ -59,7 +59,6 @@ type ProfileInfoUpdateRequest struct {
 	Goal        bool   `json:"goal"`
 	Pedigree    bool   `json:"pedigree"`
 	Awards      string `json:"awards"`
-	DeletedImgs string `json:"deletedPhotos"`
 }
 
 //responses

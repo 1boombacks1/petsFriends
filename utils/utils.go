@@ -40,4 +40,13 @@ func MakeImagePath(userId uint, imageName string) string {
 	return fullPath
 }
 
+func DeleteImage(pathToImg string) error {
+	fullPath := os.Getenv("IMAGES_PATH") + pathToImg
+	err := os.Remove(fullPath)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 //355 ане скинул быстро

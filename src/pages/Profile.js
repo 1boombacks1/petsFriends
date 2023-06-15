@@ -85,7 +85,7 @@ const Profile = () => {
   }
   const clickDeleteProfileImg = (img) => {
     var updatedImgs = images.filter((value) => img.target.id !== `${value.id}`)
-    setDeletedImages(...deletedImages, img.target.id)
+    setDeletedImages([...deletedImages, parseInt(img.target.id)+1])
     setImages(updatedImgs)
   }
 
@@ -99,13 +99,21 @@ const Profile = () => {
       formData.append("deletedPhotos", deletedImages)
       previewImages.forEach((item, i) => formData.append("photo"+i, item.img))
 
-      console.log(deletedImages)
+      setPreviewImages([])
+      setDeletedImages([])
 
       const response = await fetch("http://localhost:4000/api/user/updateInfo", {
           method : "PATCH",
           credentials: "include",
           body : formData
         });
+
+      if (!response.ok) {
+        alert("Произошла ошибка!😞")
+        return
+      }
+
+      setIsEdit(false)
 
       //good
     } catch(error) {
@@ -130,7 +138,7 @@ const Profile = () => {
             <button>Изменить фото профиля</button>
             <button
               className={isEdit ? "active" : ""}
-              onClick={() => setIsEdit(!isEdit)}
+              onClick={() => setIsEdit(true)}
             >
               Изменить профиль
             </button>
