@@ -6,42 +6,42 @@ import "gorm.io/gorm"
 type User struct {
 	gorm.Model
 	Name     string
-	Login    string `gorm:"unique"`
-	Password []byte
-	Pets     []Pet `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Login    string `gorm:"unique" json:"login"`
+	Password []byte `json:"-"`
+	Pets     []Pet  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
 type Pet struct {
 	gorm.Model
-	TypePet     bool   `gorm:"not null"`
-	Name        string `gorm:"not null"`
-	Age         uint   `gorm:"not null"`
-	BreedID     uint   `gorm:"not null"`
-	Breed       Breed
-	Sex         bool `gorm:"not null"`
-	Mating      bool `gorm:"not null"`
-	AboutMeInfo string
-	Pedigree    bool
-	Awards      []Award `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
-	UserID      uint
-	Images      []Image `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	TypePet     bool    `gorm:"not null" json:"typePet"`
+	Name        string  `gorm:"not null" json:"name"`
+	Age         uint    `gorm:"not null" json:"age"`
+	BreedID     uint    `gorm:"not null" json:"-"`
+	Breed       Breed   `json:"breed"`
+	Sex         bool    `gorm:"not null" json:"sex"`
+	Mating      bool    `gorm:"not null" json:"isMating"`
+	AboutMeInfo string  `json:"aboutMeInfo"`
+	Pedigree    bool    `json:"pedigree"`
+	Awards      []Award `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"awards"`
+	UserID      uint    `json:"userID"`
+	Images      []Image `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"photos"`
 }
 
 type Image struct {
-	ID    uint `gorm:"primaryKey"`
-	PetID uint `gorm:"not null"`
-	Path  string
+	ID    uint   `gorm:"primaryKey;autoIncrement" json:"id"`
+	PetID uint   `gorm:"not null" json:"-"`
+	Path  string `json:"path"`
 }
 
 type Award struct {
-	ID        uint `gorm:"primaryKey"`
-	PetID     uint `gorm:"not null"`
-	AwardName string
+	ID        uint   `gorm:"primaryKey" json:"-"`
+	PetID     uint   `gorm:"not null" json:"-"`
+	AwardName string `json:"name"`
 }
 
 type Breed struct {
-	ID        uint
-	BreedName string
+	ID        uint   `json:"-"`
+	BreedName string `json:"name"`
 }
 
 //requests

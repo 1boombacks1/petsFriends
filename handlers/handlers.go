@@ -14,6 +14,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm/clause"
 )
 
 func Register(c *fiber.Ctx) error {
@@ -266,7 +267,7 @@ func UpdateUserInfo(c *fiber.Ctx) error {
 		return err
 	}
 
-	photoPaths := make([]models.Image, 0)
+	photoPaths := make([]string, 0)
 
 	for i := 0; i < 5; i++ {
 		img, err := c.FormFile(fmt.Sprintf("photo%d", i))
@@ -280,7 +281,7 @@ func UpdateUserInfo(c *fiber.Ctx) error {
 			ErrLogger.Printf("Failed to save image %s on server: %v", photoPath, err)
 			return err
 		}
-		photoPaths = append(photoPaths, models.Image{Path: photoPath})
+		photoPaths = append(photoPaths, photoPath)
 		InfoLogger.Printf("Saved image %v on server", photoPath)
 	}
 
@@ -292,11 +293,11 @@ func UpdateUserInfo(c *fiber.Ctx) error {
 	var pet models.Pet
 
 	//*Обновление информации о питомце в бд
-	if err := database.DB.Where(models.Pet{UserID: user.ID}).Assign(models.Pet{
-		AboutMeInfo: payload.AboutMeInfo,
-		Mating:      payload.Goal,
-		Pedigree:    payload.Pedigree,
-	}).FirstOrCreate(&pet).Error; err != nil {
+	if err := database.DB.Model(models.Pet{}).Where(models.Pet{UserID: user.ID}).Updates(map[string]interface{}{
+		"about_me_info": payload.AboutMeInfo,
+		"mating":        payload.Goal,
+		"pedigree":      payload.Pedigree,
+	}).First(&pet).Error; err != nil {
 		ErrLogger.Printf("Failed to update information in DB: %v", err)
 		return err
 	}
@@ -306,12 +307,14 @@ func UpdateUserInfo(c *fiber.Ctx) error {
 	//*Удаление изображений, если таковы имеются в списке
 	//Сделано наполовину
 	deletedImgs := strings.Split(c.FormValue("deletedPhotos"), ",")
-	for _, imgID := range deletedImgs {
-		var deletedImg models.Image
-		database.DB.Unscoped().
-			Where("pet_id = ? AND path LIKE ?", pet.ID, "%/"+imgID+".%").First(&deletedImg).Delete(&models.Image{})
-		if err := utils.DeleteImage(deletedImg.Path); err != nil {
-			ErrLogger.Printf("Не удалось удалить фото %s", deletedImg.Path)
+	if len(deletedImgs) > 0 {
+		for _, imgID := range deletedImgs {
+			var deletedImg models.Image
+			database.DB.Unscoped().
+				Where("pet_id = ? AND path LIKE ?", pet.ID, "%/"+imgID+".%").First(&deletedImg).Delete(&models.Image{})
+			if err := utils.DeleteImage(deletedImg.Path); err != nil {
+				ErrLogger.Printf("Не удалось удалить фото %s", deletedImg.Path)
+			}
 		}
 	}
 
@@ -329,14 +332,39 @@ func UpdateUserInfo(c *fiber.Ctx) error {
 	}
 	InfoLogger.Printf("Информация питомца id=%d [Awards] обновлена", pet.ID)
 
-	for _, photo := range photoPaths {
-		var temp models.Image
-		database.DB.Model(&pet).Association("Images").Find(&temp, "path = ?", photo.Path)
-		if temp.ID == 0 {
-			database.DB.Model(&pet).Association("Images").Append(&photo)
+	//*Добавления фото в бд
+	if len(photoPaths) != 0 {
+		for _, path := range photoPaths {
+			database.DB.Model(models.Image{}).Where("pet_id = ?", pet.ID).Create(&models.Image{PetID: pet.ID, Path: path})
 		}
+		InfoLogger.Printf("Информация питомца id=%d [Photos] обновлена", pet.ID)
 	}
-	InfoLogger.Printf("Информация питомца id=%d [Photos] обновлена", pet.ID)
 
 	return c.JSON(payload)
+}
+
+//*Получение питомцев для карточек
+//Из юзера достаем информацию о нашем питомце, а именно тип питомца и цель
+func GetSuitablePets(c *fiber.Ctx) error {
+	//достаем из middleware данные о пользователе
+	user := c.Locals("user").(models.UserResponse)
+	var pet models.Pet
+	//Кладем питомца пользователя в переменную
+	if err := database.DB.Where("user_id = ?", user.ID).First(&pet).Error; err != nil {
+		ErrLogger.Printf("Failed to get user [%v] pet from DB: %v", user.ID, err)
+		return err
+	}
+	//Кладем подходящих питомцев в переменную
+	var suitablePets []models.Pet
+	if err := database.DB.Preload(clause.Associations).Where(
+		"type_pet = ? AND mating = ? AND user_id != ?",
+		pet.TypePet,
+		pet.Mating,
+		user.ID,
+	).Find(&suitablePets).Error; err != nil {
+		ErrLogger.Printf("Failed to get suitable pets from DB: %v", err)
+		return err
+	}
+
+	return c.JSON(suitablePets)
 }
