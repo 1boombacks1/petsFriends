@@ -18,6 +18,8 @@ function SwiperTinder() {
       isMating: false,
       pedigree: false,
       awards: [{ name: "" }],
+      likedPets: [],
+      dislikePets: []
     },
   ]);
 
@@ -70,16 +72,38 @@ function SwiperTinder() {
   const canSwipe = currentIndex >= 0;
 
   // set last direction and decrease current index
-  const swiped = (direction, name, index) => {
-    console.log(direction, name, index);
+  const swiped = (direction, petId, index) => {
     if (direction === "left") {
-      console.log(direction);
+      const likePet = async () => {
+        await fetch("http://localhost:4000/api/user/dislikePet", {
+          method: "POST",
+          credentials: "include",
+          headers: {'Content-type': 'application/json'},
+          body: JSON.stringify({
+            "dislikedPetId" : petId
+          })
+        })
+      }
+      likePet()
     }
     if (direction === "right") {
-      console.log(direction);
+      const dislikePet = async () => {
+        const response = await fetch("http://localhost:4000/api/user/likePet", {
+          method: "POST",
+          credentials: "include",
+          headers: {'Content-type': 'application/json'},
+          body: JSON.stringify({
+            "ID" : petId
+          })
+        })
+      const isMatch = response.json()
+      console.log(isMatch)
+      }
+      dislikePet()
     }
     updateCurrentIndex(index - 1);
   };
+
   const outOfFrame = (name, idx) => {
     // console.log(`${name} (${idx}) left the screen!`, currentIndexRef.current)
     // handle the case in which go back is pressed before card goes outOfFrame
@@ -131,6 +155,7 @@ function SwiperTinder() {
         href="https://fonts.googleapis.com/css?family=Alatsi&display=swap"
         rel="stylesheet"
       />
+      {/* <button className="round-btn" onClick={()=>(console.log(suitablePets[0].LikedPets))}/> */}
       <h2 className="infoText">
         Swipe right - if you like, if not swipe left. Double Click to see
         description
@@ -144,7 +169,7 @@ function SwiperTinder() {
               className="swipe"
               key={pet.ID}
               preventSwipe={["up", "down"]}
-              onSwipe={(dir) => swiped(dir, pet.name, index)} //Зачем?
+              onSwipe={(dir) => swiped(dir, pet.ID, index)} //Зачем?
               onCardLeftScreen={() => outOfFrame(pet.name, index)} //Зачем?
               onSwipeRequirementFulfilled={(i) =>
                 onChangeSide(i, myRefs.current[index].current)
@@ -162,7 +187,7 @@ function SwiperTinder() {
                   }}
                   className="card"
                 >
-                  <h3>{pet.name}, {formatAge(pet.age)}</h3>
+                  <h3>{pet.name}, {formatAge(pet.age)}, {pet.ID}</h3>
                   <div className="description pressable">
                     <img
                       className="sexicon"

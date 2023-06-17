@@ -31,9 +31,14 @@ func Init() {
 
 	DB = connection
 
-	err = connection.AutoMigrate(&models.User{}, &models.Pet{}, &models.Pet{}, &models.Image{}, &models.Award{})
+	err = connection.AutoMigrate(&models.User{}, &models.Pet{}, &models.DislikedPet{}, &models.Image{}, &models.Award{})
 	if err != nil {
 		log.Fatal("Migration failed: \n", err.Error())
+	}
+
+	err = DB.SetupJoinTable(&models.Pet{}, "DislikedPets", &models.DislikedPet{})
+	if err != nil {
+		log.Fatal("Замена моделей дизлайк петс не удалась", err.Error())
 	}
 	log.Print("🚀 Database successed connection!")
 }
