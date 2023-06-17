@@ -1,18 +1,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
+@font-face {
+  font-family: 'Gilroy';
+  src: url('../public/Gilroy-Regular.ttf');
+  font-weight: 400;
+  font-style: normal;
+}
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Lobster', cursive, sans-serif;
+  font-family: 'Gilroy', cursive, sans-serif;
 }
 body {
-  background: url('https://res.cloudinary.com/finnhvman/image/upload/v1541930411/pattern.png');
+  background: url('../public/LoginRegistrationBackground.png');
+  background-attachment: fixed;
 }
 .App {
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  /* justify-content: space-between; */
+  justify-content: center;
 }
 .full-center {
   min-height: 100vh;
@@ -22,6 +29,10 @@ body {
 }
 .flex {
   display: flex;
+  gap: 20px;
+}
+.wrap {
+  flex-wrap: wrap;
 }
 .sb {
   justify-content: space-between;
@@ -30,8 +41,7 @@ body {
   align-items: flex-end;
 }
 .content {
-  width: 100%;
-  height: 100%;
+  flex-grow: 1;
   min-height: 100vh;
   padding: 15px;
   display: flex;
@@ -48,4 +58,7 @@ header h1 {
 }
 header img {
   width: 40px;
+}
+.content h2 {
+  font-size: 32px;
 }
