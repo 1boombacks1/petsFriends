@@ -13,18 +13,27 @@ type User struct {
 
 type Pet struct {
 	gorm.Model
-	TypePet     bool    `gorm:"not null" json:"typePet"`
-	Name        string  `gorm:"not null" json:"name"`
-	Age         uint    `gorm:"not null" json:"age"`
-	BreedID     uint    `gorm:"not null" json:"-"`
-	Breed       Breed   `json:"breed"`
-	Sex         bool    `gorm:"not null" json:"sex"`
-	Mating      bool    `gorm:"not null" json:"isMating"`
-	AboutMeInfo string  `json:"aboutMeInfo"`
-	Pedigree    bool    `json:"pedigree" gorm:"default:false"`
-	Awards      []Award `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"awards"`
-	UserID      uint    `json:"userID"`
-	Images      []Image `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"photos"`
+	TypePet      bool    `gorm:"not null" json:"typePet"`
+	Name         string  `gorm:"not null" json:"name"`
+	Age          uint    `gorm:"not null" json:"age"`
+	BreedID      uint    `gorm:"not null" json:"-"`
+	Breed        Breed   `json:"breed"`
+	Sex          bool    `gorm:"not null" json:"sex"`
+	Mating       bool    `gorm:"not null" json:"isMating"`
+	AboutMeInfo  string  `json:"aboutMeInfo"`
+	Pedigree     bool    `json:"pedigree" gorm:"default:false"`
+	Awards       []Award `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"awards"`
+	UserID       uint    `json:"userID"`
+	Images       []Image `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"photos"`
+	LikedPets    []*Pet  `gorm:"many2many:liked_pets"`
+	DislikedPets []*Pet  `gorm:"many2many:disliked_pets"`
+	Pairs        []*Pet  `gorm:"many2many:pairs"`
+}
+
+type DislikedPet struct {
+	PetID         uint `gorm:"primaryKey"`
+	DislikedPetID uint `gorm:"primaryKey" json:"dislikedPetId"`
+	Confirmed     bool `gorm:"default:false"`
 }
 
 type Image struct {

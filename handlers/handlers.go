@@ -5,6 +5,7 @@ import (
 	. "d0c/petsFriends/logs"
 	"d0c/petsFriends/models"
 	"d0c/petsFriends/utils"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -14,6 +15,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -353,4 +355,56 @@ func GetSuitablePets(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(suitablePets)
+}
+
+func LikePet(c *fiber.Ctx) error {
+	user := c.Locals("user").(models.UserResponse)
+	var userPet models.Pet
+	database.DB.Where("user_id = ?", user.ID).First(&userPet)
+	var likedPet models.Pet
+	if err := c.BodyParser(&likedPet); err != nil {
+		ErrLogger.Printf("Не спарсил данные! %s", err)
+		return err
+	}
+	//Удалить питомца с DislikedPets
+	database.DB.Unscoped().Model(&userPet).Association("DislikedPets").Delete(&likedPet)
+	//Создать питомца в LikedPets
+	database.DB.Model(&userPet).Association("LikedPets").Append(&likedPet)
+
+	InfoLogger.Printf("Питомец [%v] лайкнул питомца [%v]", userPet.ID, likedPet.ID)
+
+	return c.SendStatus(200)
+}
+
+func DislikePet(c *fiber.Ctx) error {
+	user := c.Locals("user").(models.UserResponse)
+	var userPet models.Pet
+	database.DB.Where("user_id = ?", user.ID).First(&userPet)
+
+	var dislikedPet models.DislikedPet
+	if err := c.BodyParser(&dislikedPet); err != nil {
+		ErrLogger.Printf("Не спарсил данные! %s", err)
+		return err
+	}
+	dislikedPet.PetID = userPet.ID
+	//Проверка сущетствует ли запись в DislikedPets
+	//? Заметка: В метод Append класть нужно СТРОГО модель из Ассоциации, которую задали в структуре
+	//? В данном случае DislikedPets в моделе прописана *[]Pet - значит нужна модель Pet,
+	//? и ничто другое
+	if err := database.DB.Where("disliked_pet_id = ?", dislikedPet.DislikedPetID).First(&dislikedPet).Error; errors.Is(
+		err, gorm.ErrRecordNotFound) {
+		InfoLogger.Print("Запись не найдена, идет создания записи в таблицу DislikedPet")
+		InfoLogger.Printf("Pet: %v", dislikedPet)
+		if err := database.DB.Model(&userPet).Association("DislikedPets").Append(&models.Pet{
+			Model: gorm.Model{ID: dislikedPet.DislikedPetID},
+		}); err != nil {
+			ErrLogger.Fatal(err)
+		}
+	} else {
+		InfoLogger.Print("Запись найдена, идет изменение записи в таблицу DislikedPet")
+		InfoLogger.Printf("Pet: %v", dislikedPet)
+		database.DB.Model(&dislikedPet).Update("confirmed", true)
+	}
+
+	return c.JSON(dislikedPet)
 }

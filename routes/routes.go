@@ -28,6 +28,8 @@ func Setup(app *fiber.App) {
 			user.Get("/getMe", handlers.GetMe)
 			user.Patch("/updateInfo", handlers.UpdateUserInfo)
 			user.Get("/getSuitablePets", handlers.GetSuitablePets)
+			user.Post("/dislikePet", handlers.DislikePet)
+			user.Post("/likePet", handlers.LikePet)
 		}
 	}
 
