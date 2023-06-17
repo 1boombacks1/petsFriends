@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import "../css/profile.css";
 import girl from "../img/girl.svg";
 import boy from "../img/boy.svg";
+import { useNavigate } from "react-router-dom";
 
 // const testawards = ["BIS-P", "BIS-V"];
 // const texttext =
@@ -10,12 +11,13 @@ import boy from "../img/boy.svg";
 const static_url = "http://localhost:4000/static";
 
 const Profile = () => {
+  const navigate = useNavigate()
   //Основная информация
   const [name, setName] = useState("");
   const [sex, setSex] = useState(true);
   const [breed, setBreed] = useState("");
   const [age, setAge] = useState(0);
-  const [images, setImages] = useState([{"id" : 0, "url" : "/static"}]);
+  const [images, setImages] = useState([{ id: 0, url: "/static" }]);
   const [aboutMeInfo, setAboutMeInfo] = useState("");
 
   const [goal, setGoal] = useState("");
@@ -38,28 +40,36 @@ const Profile = () => {
         const response = await fetch("http://localhost:4000/api/user/getMe", {
           credentials: "include",
         });
-        const data = await response.json();
-        setName(data.name);
-        setSex(data.sex);
-        setBreed(data.breed);
-        setAge(data.age);
-        setAboutMeInfo(data.aboutMeInfo);
-        setGoal(data.goal ? "mating" : "friends");
-        setPedigree(data.pedigree ? "have" : "not");
-        setAwards(data.awards.filter(Boolean));
-
-        let responseImages = []
-        for (let i = 0; i < data.photos.length; i++) {
-          responseImages.push({"id" : i, "url" : data.photos[i]})
+        if (response.status === 401) {
+          alert("Авторизируйтесь пожалуйста 😘")
+          navigate("/login")
+          return "unauth"
         }
-        setImages(responseImages)
+        const data = await response.json();
+        return data;
       } catch (error) {
         console.error("Error fetching petInfo:", error);
       }
     };
 
-    fetchDataForPet();
-  }, [isEdit]);
+    fetchDataForPet().then((data) => {
+      if (data === "unauth") return
+      setName(data.name);
+      setSex(data.sex);
+      setBreed(data.breed);
+      setAge(data.age);
+      setAboutMeInfo(data.aboutMeInfo);
+      setGoal(data.goal ? "mating" : "friends");
+      setPedigree(data.pedigree ? "have" : "not");
+      setAwards(data.awards.filter(Boolean));
+
+      let responseImages = [];
+      for (let i = 0; i < data.photos.length; i++) {
+        responseImages.push({ id: i, url: data.photos[i] });
+      }
+      setImages(responseImages);
+    });
+  }, [isEdit, navigate]);
 
   const handleAddAward = () => {
     setAwards([...awards, awardValue]);
@@ -71,50 +81,59 @@ const Profile = () => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPreviewImages([...previewImages, {"img" : file, "url" : reader.result, "id" : previewImages.length - 1}]);
+        setPreviewImages([
+          ...previewImages,
+          { img: file, url: reader.result, id: previewImages.length - 1 },
+        ]);
       };
       reader.readAsDataURL(file);
     }
   };
 
   const clickDeletePreviewImg = (img) => {
-    var updatedImgs = previewImages.filter((value) => img.target.id !== `${value.id}`)
-    setPreviewImages(updatedImgs)
-  }
+    var updatedImgs = previewImages.filter(
+      (value) => img.target.id !== `${value.id}`
+    );
+    setPreviewImages(updatedImgs);
+  };
   const clickDeleteProfileImg = (img) => {
-    var updatedImgs = images.filter((value) => img.target.id !== `${value.id}`)
-    setDeletedImages([...deletedImages, parseInt(img.target.id)+1])
-    setImages(updatedImgs)
-  }
-
+    var updatedImgs = images.filter((value) => img.target.id !== `${value.id}`);
+    setDeletedImages([...deletedImages, parseInt(img.target.id) + 1]);
+    setImages(updatedImgs);
+  };
   const clickChangeInfo = async () => {
     try {
-      const formData = new FormData()
-      formData.append("aboutMeInfo", aboutMeInfo)
-      formData.append("goal", goal === "mating")
-      formData.append("pedigree", pedigree === "have")
-      formData.append("awards", awards)
-      formData.append("deletedPhotos", deletedImages)
-      previewImages.forEach((item, i) => formData.append("photo"+i, item.img))
+      const formData = new FormData();
+      formData.append("aboutMeInfo", aboutMeInfo);
+      formData.append("goal", goal === "mating");
+      formData.append("pedigree", pedigree === "have");
+      formData.append("awards", awards);
+      formData.append("deletedPhotos", deletedImages);
+      previewImages.forEach((item, i) =>
+        formData.append("photo" + i, item.img)
+      );
 
-      setPreviewImages([])
-      setDeletedImages([])
+      setPreviewImages([]);
+      setDeletedImages([]);
 
-      const response = await fetch("http://localhost:4000/api/user/updateInfo", {
-          method : "PATCH",
+      const response = await fetch(
+        "http://localhost:4000/api/user/updateInfo",
+        {
+          method: "PATCH",
           credentials: "include",
-          body : formData
-        });
+          body: formData,
+        }
+      );
 
       if (!response.ok) {
-        alert("Произошла ошибка!😞")
-        return
+        alert("Произошла ошибка!😞");
+        return;
       }
 
-      setIsEdit(false)
+      setIsEdit(false);
 
       //good
-    } catch(error) {
+    } catch (error) {
       console.error("Error fetching new data:", error);
     }
   };
@@ -159,12 +178,22 @@ const Profile = () => {
             {isEdit ? (
               <>
                 {images.slice(1).map((img) => (
-                  <div id={img.id} key={img.url} onClick={clickDeleteProfileImg} className="editImg">
+                  <div
+                    id={img.id}
+                    key={img.url}
+                    onClick={clickDeleteProfileImg}
+                    className="editImg"
+                  >
                     <img alt="" src={static_url + img.url} />
                   </div>
                 ))}
                 {previewImages.map((img) => (
-                  <div id={img.id} key={img.url} onClick={clickDeletePreviewImg} className="editImg">
+                  <div
+                    id={img.id}
+                    key={img.url}
+                    onClick={clickDeletePreviewImg}
+                    className="editImg"
+                  >
                     <img alt="" src={img.url} />
                   </div>
                 ))}
@@ -181,7 +210,11 @@ const Profile = () => {
                 )}
               </>
             ) : (
-              images.slice(1).map((img) => <img key={img.url} alt="" src={static_url + img.url} />)
+              images
+                .slice(1)
+                .map((img) => (
+                  <img key={img.url} alt="" src={static_url + img.url} />
+                ))
             )}
           </div>
           {isEdit && (
@@ -218,7 +251,9 @@ const Profile = () => {
               </div>
             ) : (
               <div className="flex">
-                <div className="option">{goal === "mating" ? "Вязка" : "Найти друзей"}</div>
+                <div className="option">
+                  {goal === "mating" ? "Вязка" : "Найти друзей"}
+                </div>
               </div>
             )}
           </div>
@@ -249,7 +284,9 @@ const Profile = () => {
               </div>
             ) : (
               <div className="flex">
-                <div className="option">{pedigree === "have" ? "Есть" : "Нет"}</div>
+                <div className="option">
+                  {pedigree === "have" ? "Есть" : "Нет"}
+                </div>
               </div>
             )}
           </div>

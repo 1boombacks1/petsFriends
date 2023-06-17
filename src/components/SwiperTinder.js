@@ -3,32 +3,12 @@ import TinderCard from "react-tinder-card";
 import "../css/swiperTinder.css";
 import girl from "../img/girl.svg";
 import boy from "../img/boy.svg";
-const db = [
-  {
-    name: "Alexa, 3 y.o",
-    url: "./img/full-pets/image5.png",
-  },
-  {
-    name: "Erlich Bachman",
-    url: "./img/full-pets/image5.png",
-  },
-  {
-    name: "Monica Hall",
-    url: "./img/full-pets/image5.png",
-  },
-  {
-    name: "Jared Dunn",
-    url: "./img/full-pets/image5.png",
-  },
-  {
-    name: "Alex, 4 y.o",
-    url: "./img/full-pets/image5.png",
-  },
-];
+import { useNavigate } from "react-router-dom";
 
 const static_url = "http://localhost:4000/static";
 
 function SwiperTinder() {
+  const navigate = useNavigate()
   const [suitablePets, setSuitablePets] = useState([
     {
       ID: 0,
@@ -42,6 +22,18 @@ function SwiperTinder() {
   ]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
+  const currentIndexRef = useRef(currentIndex);
+  const myRefs = useRef([]);
+  myRefs.current = suitablePets.map(
+    (element, i) => myRefs.current[i] ?? React.createRef()
+  );
+  const childRefs = useMemo(
+    () =>
+      Array(suitablePets.length)
+        .fill(0)
+        .map((i) => React.createRef()),
+    [suitablePets]
+  );
 
   useEffect(() => {
     const fetchSuitablePets = async () => {
@@ -53,8 +45,11 @@ function SwiperTinder() {
           }
         );
 
-        const data = await response.json();
+        if (response.status === 401) {
+          navigate("/login")
+        }
 
+        const data = await response.json();
         return data;
       } catch (error) {
         console.error("Error fetching petInfo:", error);
@@ -65,23 +60,7 @@ function SwiperTinder() {
       setSuitablePets(data);
       setCurrentIndex(data.length - 1);
     });
-  }, []);
-
-  console.log(currentIndex, suitablePets)
-  // used for outOfFrame closure
-  const currentIndexRef = useRef(currentIndex);
-  const myRefs = useRef([]);
-
-  myRefs.current = suitablePets.map(
-    (element, i) => myRefs.current[i] ?? React.createRef()
-  );
-  const childRefs = useMemo(
-    () =>
-      Array(suitablePets.length)
-        .fill(0)
-        .map((i) => React.createRef()),
-    [suitablePets]
-  );
+  }, [navigate]);
 
   const updateCurrentIndex = (val) => {
     setCurrentIndex(val);
@@ -207,8 +186,8 @@ function SwiperTinder() {
                     <div>
                       <h3>Награды</h3>
                       {pet.awards.length > 0 ? (
-                        pet.awards.map((award) => (
-                          <p className="option award">{award.name}</p>
+                        pet.awards.map((award, i) => (
+                          <p key={i} className="option award">{award.name}</p>
                         ))
                       ) : (
                         <p className="option">Нет</p>

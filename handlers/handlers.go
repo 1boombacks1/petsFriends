@@ -141,6 +141,7 @@ func Logout(c *fiber.Ctx) error {
 func GetBreeds(c *fiber.Ctx) error {
 	breeds := []models.Breed{}
 	if err := database.DB.Find(&breeds).Error; err != nil {
+		ErrLogger.Print("Не удалось получить список подходящих пород")
 		return c.SendStatus(fiber.StatusBadGateway)
 	}
 	return c.JSON(breeds)
@@ -201,21 +202,6 @@ func RegisterPet(c *fiber.Ctx) error {
 
 	return c.SendStatus(fiber.StatusOK)
 }
-
-// func GetProfilePetById(c *fiber.Ctx) error {
-// 	user_id, _ := strconv.Atoi(c.Params("id"))
-// 	// var user models.User
-// 	var pet models.Pet
-// 	// database.DB.Preload("Pets").Where("id = ?", user_id).First(&user)
-// 	if err := database.DB.Where("user_id = ?", user_id).First(&pet).Error; err != nil {
-// 		ErrLogger.Printf("Не удалось найти питомца пользователя: %v", err)
-// 		return err
-// 	}
-
-// 	InfoLogger.Printf("Питомец: %v", pet)
-
-// 	return c.JSON(pet)
-// }
 
 func GetMe(c *fiber.Ctx) error {
 	user := c.Locals("user").(models.UserResponse)

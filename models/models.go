@@ -21,7 +21,7 @@ type Pet struct {
 	Sex         bool    `gorm:"not null" json:"sex"`
 	Mating      bool    `gorm:"not null" json:"isMating"`
 	AboutMeInfo string  `json:"aboutMeInfo"`
-	Pedigree    bool    `json:"pedigree"`
+	Pedigree    bool    `json:"pedigree" gorm:"default:false"`
 	Awards      []Award `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"awards"`
 	UserID      uint    `json:"userID"`
 	Images      []Image `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"photos"`
@@ -40,7 +40,8 @@ type Award struct {
 }
 
 type Breed struct {
-	ID        uint   `json:"-"`
+	ID        uint
+	IsDog     bool   `gorm:"default:true"`
 	BreedName string `json:"name"`
 }
 
