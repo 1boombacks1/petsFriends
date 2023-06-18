@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 
+const server_url = process.env.REACT_APP_SERVER_URL
+
 const Login = () => {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
@@ -9,7 +11,7 @@ const Login = () => {
   const submit = async (e) => {
     e.preventDefault();
 
-    const response = await fetch('http://localhost:4000/auth/login', {
+    const response = await fetch(server_url + '/auth/login', {
             method: 'POST',
             headers: {'Content-type': 'application/json'},
             credentials: 'include',

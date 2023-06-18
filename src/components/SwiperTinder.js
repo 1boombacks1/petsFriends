@@ -6,7 +6,9 @@ import boy from "../img/boy.svg";
 import { useNavigate } from "react-router-dom";
 import ModalMatch from './ModalMatch'
 
-const static_url = "http://localhost:4000/static";
+const server_url = process.env.REACT_APP_SERVER_URL
+
+const static_url = server_url + "/static";
 
 function SwiperTinder() {
   const navigate = useNavigate();
@@ -46,7 +48,7 @@ function SwiperTinder() {
       try {
         console.log("Getting data...")
         const response = await fetch(
-          "http://localhost:4000/api/user/getSuitablePets",
+          server_url+"/api/user/getSuitablePets",
           {
             credentials: "include",
           }
@@ -84,7 +86,7 @@ function SwiperTinder() {
   const swiped = (direction, petId, index) => {
     if (direction === "left") {
       const dislikePet = async () => {
-        await fetch("http://localhost:4000/api/user/dislikePet", {
+        await fetch(server_url + "/api/user/dislikePet", {
           method: "POST",
           credentials: "include",
           headers: { "Content-type": "application/json" },
@@ -97,7 +99,7 @@ function SwiperTinder() {
     }
     if (direction === "right") {
       const likePet = async () => {
-        const response = await fetch("http://localhost:4000/api/user/likePet", {
+        const response = await fetch(server_url + "/api/user/likePet", {
           method: "POST",
           credentials: "include",
           headers: { "Content-type": "application/json" },

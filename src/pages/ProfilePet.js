@@ -5,7 +5,8 @@ import "../css/profile.css";
 import girl from "../img/girl.svg";
 import boy from "../img/boy.svg";
 
-const static_url = "http://localhost:4000/static";
+const server_url = process.env.REACT_APP_SERVER_URL
+const static_url = server_url + "/static";
 const ProfilePet = () => {
   const navigate = useNavigate();
   const params = useParams();
@@ -13,10 +14,9 @@ const ProfilePet = () => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    console.log("Test")
     const fetchDataForPet = async () => {
         const response = await fetch(
-          "http://localhost:4000/api/user/getProfile/" + params.id,
+          server_url + "/api/user/getProfile/" + params.id,
           {
             credentials: "include",
           }

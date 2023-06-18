@@ -38,6 +38,8 @@ const sidebarNavItems = [
 
 const dontShowRoutes = ['registration', 'login', 'registerPet']
 
+const server_url = process.env.REACT_APP_SERVER_URL
+
 const Sidebar = () => {
   const [activeIndex, setActiveIndex] = useState(0)
   const [stepHeight, setStepHeight] = useState(0)
@@ -49,7 +51,7 @@ const Sidebar = () => {
   const navigate = useNavigate()
 
   const submitLogoutCofirmation = async () => {
-    await fetch('http://localhost:4000/api/user/logout', {
+    await fetch(server_url + '/api/user/logout', {
       method: 'POST',
       headers: { 'Content-type': 'application/json' },
       credentials: 'include',

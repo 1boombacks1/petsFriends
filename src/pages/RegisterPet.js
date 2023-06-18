@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import "../css/registerPet.css";
 import { useNavigate } from "react-router-dom";
 
+const server_url = process.env.REACT_APP_SERVER_URL
+
 const RegisterPet = () => {
   const navigate = useNavigate()
 
@@ -22,7 +24,7 @@ const RegisterPet = () => {
   useEffect(() => {
     const fetchBreeds = async () => {
       try {
-        const response = await fetch("http://localhost:4000/api/breeds", {
+        const response = await fetch(server_url + "/api/breeds", {
           credentials: "include",
         });
         const data = await response.json();
@@ -58,7 +60,7 @@ const RegisterPet = () => {
     formData.append("goal", goal);
     formData.append("img", selectedImg);
 
-    const response = await fetch("http://localhost:4000/api/user/registerPet", {
+    const response = await fetch(server_url + "/api/user/registerPet", {
       method: "POST",
       credentials: "include",
       body: formData,

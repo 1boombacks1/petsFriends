@@ -7,8 +7,8 @@ import { useNavigate } from "react-router-dom";
 // const testawards = ["BIS-P", "BIS-V"];
 // const texttext =
 //   "The American Staffordshire Terrier is a loving, loyal, playful dog that loves to
-
-const static_url = "http://localhost:4000/static";
+const server_url = process.env.REACT_APP_SERVER_URL
+const static_url = server_url + "/static";
 
 const MyProfile = () => {
   const navigate = useNavigate()
@@ -37,7 +37,7 @@ const MyProfile = () => {
   useEffect(() => {
     const fetchDataForPet = async () => {
       try {
-        const response = await fetch("http://localhost:4000/api/user/getMe", {
+        const response = await fetch(server_url + "/api/user/getMe", {
           credentials: "include",
         });
         if (response.status === 401) {
@@ -117,7 +117,7 @@ const MyProfile = () => {
       setDeletedImages([]);
 
       const response = await fetch(
-        "http://localhost:4000/api/user/updateInfo",
+        server_url + "/api/user/updateInfo",
         {
           method: "PATCH",
           credentials: "include",

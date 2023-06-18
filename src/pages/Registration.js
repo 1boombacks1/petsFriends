@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
+const server_url = process.env.REACT_APP_SERVER_URL
+
 const Registration = () => {
   const [name, setName] = useState("");
   const [login, setLogin] = useState("");
@@ -18,7 +20,7 @@ const Registration = () => {
       return; // Прекратить выполнение функции в случае несовпадения паролей
     }
 
-    const response = await fetch("http://localhost:4000/auth/register", {
+    const response = await fetch(server_url + "/auth/register", {
       method: "POST",
       headers: { "Content-type": "application/json" },
       body: JSON.stringify({

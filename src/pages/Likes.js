@@ -5,7 +5,8 @@ import ModalMatch from '../components/ModalMatch'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-const static_url = 'http://localhost:4000/static'
+const server_url = process.env.REACT_APP_SERVER_URL
+const static_url = server_url + '/static'
 
 const Likes = () => {
   const navigate = useNavigate()
@@ -17,7 +18,7 @@ const Likes = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch("http://localhost:4000/api/user/getLikeAndLikedPets", {
+      const response = await fetch(server_url + "/api/user/getLikeAndLikedPets", {
         credentials : "include",
       })
       const data = await response.json()
@@ -32,7 +33,7 @@ const Likes = () => {
 
   const clickLike = (petId) => {
     const fetchData = async () => {
-      const response = await fetch("http://localhost:4000/api/user/likePet", {
+      const response = await fetch(server_url + "/api/user/likePet", {
         method: 'POST',
           credentials: 'include',
           headers: { 'Content-type': 'application/json' },
@@ -59,7 +60,7 @@ const Likes = () => {
 
   const clickDislike =(petId) => {
     const fetchData = async () => {
-      await fetch("http://localhost:4000/api/user/dislikePet", {
+      await fetch(server_url + "/api/user/dislikePet", {
         method: 'POST',
           credentials: 'include',
           headers: { 'Content-type': 'application/json' },
