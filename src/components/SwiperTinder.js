@@ -169,7 +169,7 @@ function SwiperTinder() {
                   className='card'
                 >
                   <h3>
-                    {pet.name}, {formatAge(pet.age)}, {pet.ID}
+                    {pet.name}, {formatAge(pet.age)}
                   </h3>
                   <div className='description pressable'>
                     <img className='sexicon' alt='' src={pet.sex ? boy : girl} />

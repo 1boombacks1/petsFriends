@@ -21,12 +21,12 @@ const sidebarNavItems = [
     to: '/likes',
     section: 'likes',
   },
-  {
-    display: 'Messages',
-    icon: <img width='30' height='30' src='https://img.icons8.com/ios/50/1A1A1A/speech-bubble--v1.png' alt='speech-bubble--v1' />,
-    to: '/messages',
-    section: 'messages',
-  },
+  // {
+  //   display: 'Messages',
+  //   icon: <img width='30' height='30' src='https://img.icons8.com/ios/50/1A1A1A/speech-bubble--v1.png' alt='speech-bubble--v1' />,
+  //   to: '/messages',
+  //   section: 'messages',
+  // },
   {
     display: 'Logout',
     icon: <img width='30' height='30' src='https://img.icons8.com/ios/50/1A1A1A/exit--v1.png' alt='exit--v1' />,

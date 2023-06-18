@@ -4,6 +4,7 @@ import { Link, Navigate } from "react-router-dom";
 const Registration = () => {
   const [name, setName] = useState("");
   const [login, setLogin] = useState("");
+  const [contact, setContact] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordMatch, setPasswordMatch] = useState(true);
@@ -24,6 +25,7 @@ const Registration = () => {
         name,
         login,
         password,
+        contact
       }),
     });
 
@@ -61,6 +63,15 @@ const Registration = () => {
               placeholder="Введи логин"
               required
               onChange={(e) => setLogin(e.target.value)}
+            />
+          </div>
+          <div className="input-box">
+            <input
+              name="contact"
+              type="url"
+              placeholder="Введи ссылку для связи (tg,vk,insta)"
+              required
+              onChange={(e) => setContact(e.target.value)}
             />
           </div>
           <div className="input-box">

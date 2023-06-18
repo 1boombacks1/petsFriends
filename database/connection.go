@@ -8,6 +8,7 @@ import (
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 
 	"d0c/petsFriends/models"
 )
@@ -23,7 +24,9 @@ func Init() {
 	db_port := os.Getenv("DB_PORT")
 
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", db_user, db_password, db_host, db_port, db_name)
-	connection, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	connection, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.Default,
+	})
 
 	if err != nil {
 		log.Fatalf("Failed to connect to DB, %s", err)

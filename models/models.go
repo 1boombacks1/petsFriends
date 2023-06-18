@@ -7,6 +7,7 @@ type User struct {
 	gorm.Model
 	Name     string
 	Login    string `gorm:"unique" json:"login"`
+	Contact  string `json:"contact"`
 	Password []byte `json:"-"`
 	Pets     []Pet  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
@@ -31,7 +32,7 @@ type Pet struct {
 }
 
 type DislikedPet struct {
-	PetID         uint `gorm:"primaryKey"`
+	PetID         uint `gorm:"primaryKey" json:"petID"`
 	DislikedPetID uint `gorm:"primaryKey" json:"dislikedPetId"`
 	Confirmed     bool `gorm:"default:false"`
 }
@@ -87,6 +88,13 @@ type PetResponse struct {
 	Goal        bool     `json:"goal,omitempty"`
 	Pedigree    bool     `json:"pedigree,omitempty"`
 	Awards      []string `json:"awards,omitempty"`
+}
+
+type MatchResponse struct {
+	IsMatch  bool   `json:"isMatch"`
+	UserPet  Pet    `json:"userPet"`
+	LikedPet Pet    `json:"likedPet"`
+	Contact  string `json:"contact"`
 }
 
 func FilterUserResponse(user *User) UserResponse {

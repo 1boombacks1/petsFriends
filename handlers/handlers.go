@@ -32,6 +32,7 @@ func Register(c *fiber.Ctx) error {
 		Name:     data["name"],
 		Login:    data["login"],
 		Password: password,
+		Contact:  data["contact"],
 	}
 
 	if err := database.DB.Create(&user).Error; err != nil {
@@ -245,6 +246,24 @@ func GetMe(c *fiber.Ctx) error {
 	})
 }
 
+func GetProfilePetById(c *fiber.Ctx) error {
+	param, err := c.ParamsInt("id")
+	InfoLogger.Print(param)
+
+	if err != nil {
+		ErrLogger.Print("Не удалось получить параметр", err)
+		return err
+	}
+	var pet models.Pet
+
+	database.DB.Preload(clause.Associations).First(&pet, param)
+	if pet.ID == 0 {
+		return c.SendStatus(fiber.StatusNotFound)
+	}
+
+	return c.JSON(pet)
+}
+
 func UpdateUserInfo(c *fiber.Ctx) error {
 	user := c.Locals("user").(models.UserResponse)
 
@@ -375,7 +394,7 @@ func GetSuitablePets(c *fiber.Ctx) error {
 func LikePet(c *fiber.Ctx) error {
 	user := c.Locals("user").(models.UserResponse)
 	var userPet models.Pet
-	database.DB.Where("user_id = ?", user.ID).First(&userPet)
+	database.DB.Preload("Images").Where("user_id = ?", user.ID).First(&userPet)
 	var likedPet models.Pet
 	if err := c.BodyParser(&likedPet); err != nil {
 		ErrLogger.Printf("Не спарсил данные! %s", err)
@@ -389,8 +408,24 @@ func LikePet(c *fiber.Ctx) error {
 
 	InfoLogger.Printf("Питомец [%v] лайкнул питомца [%v]", userPet.ID, likedPet.ID)
 
-	return c.JSON(fiber.Map{
-		"isMatch": false,
+	if err := database.DB.Table("pairs").Where("pet_id = ? AND pair_id = ?", userPet.ID, likedPet.ID).
+		Or("pet_id = ? AND pair_id = ?", likedPet.ID, userPet.ID).First(&models.Pet{}).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return c.JSON(models.MatchResponse{
+				IsMatch: false,
+			})
+		}
+	}
+
+	database.DB.Preload("Images").First(&likedPet, likedPet.ID)
+	var userInfo models.User
+	database.DB.Find(&user)
+
+	return c.JSON(models.MatchResponse{
+		IsMatch:  true,
+		UserPet:  userPet,
+		LikedPet: likedPet,
+		Contact:  userInfo.Contact,
 	})
 }
 
@@ -413,11 +448,16 @@ func DislikePet(c *fiber.Ctx) error {
 		err, gorm.ErrRecordNotFound) {
 		InfoLogger.Print("Запись не найдена, идет создания записи в таблицу DislikedPet")
 		InfoLogger.Printf("Pet: %v", dislikedPet)
-		if err := database.DB.Model(&userPet).Association("DislikedPets").Append(&models.Pet{
-			Model: gorm.Model{ID: dislikedPet.DislikedPetID},
-		}); err != nil {
-			ErrLogger.Fatal(err)
-		}
+
+		database.DB.Table("disliked_pets").Create(map[string]interface{}{
+			"pet_id":          dislikedPet.PetID,
+			"disliked_pet_id": dislikedPet.DislikedPetID,
+		})
+		// if err := database.DB.Model(&userPet).Association("DislikedPets").Append(&models.Pet{
+		// 	Model: gorm.Model{ID: dislikedPet.DislikedPetID},
+		// }); err != nil {
+		// 	ErrLogger.Fatal(err)
+		// }
 	} else {
 		InfoLogger.Print("Запись найдена, идет изменение записи в таблицу DislikedPet")
 		InfoLogger.Printf("Pet: %v", dislikedPet)
@@ -425,4 +465,39 @@ func DislikePet(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(dislikedPet)
+}
+
+func GetLikeAndLikedPets(c *fiber.Ctx) error {
+	user := c.Locals("user").(models.UserResponse)
+
+	var pet models.Pet
+	database.DB.Preload("LikedPets.Images").Preload(clause.Associations).Where("user_id = ?", user.ID).First(&pet)
+
+	//Питомцы, которым понравился питомец пользователя
+	var petslikedUserPet []models.Pet
+	likedPetIDs := make([]uint, 0)
+
+	for _, likedPet := range pet.LikedPets {
+		likedPetIDs = append(likedPetIDs, likedPet.ID)
+	}
+
+	database.DB.Preload("Images").Preload("LikedPets").Preload("DislikedPets").
+		Where(
+			"id IN (SELECT pet_id FROM liked_pets WHERE liked_pet_id = ? AND pet_id NOT IN (?) AND id NOT IN (SELECT disliked_pet_id from disliked_pets WHERE confirmed is true))",
+			pet.ID,
+			likedPetIDs,
+		).
+		Find(&petslikedUserPet)
+	/*
+		? Болле строгий вариант поиска внутри m2m таблицы
+		? database.DB.Where("id IN (?)", DB.Table("liked_pets").Select("pet_id").Where("liked_pet_id =?", pet.ID)).Find(&pets)
+		https://stackoverflow.com/questions/63475885/how-to-query-a-many2many-relationship-with-a-where-clause-on-the-association-wit/73797763#73797763
+		Отсюда взял варианты
+	*/
+	//после фильтрации должен остаться только 12. при дизлайке confirmed==true -> не отобразиться
+
+	return c.JSON(fiber.Map{
+		"likedPets":        pet.LikedPets,
+		"petsLikedUserPet": petslikedUserPet,
+	})
 }
