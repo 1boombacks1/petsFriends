@@ -338,12 +338,13 @@ func GetSuitablePets(c *fiber.Ctx) error {
 	user := c.Locals("user").(models.UserResponse)
 	var pet models.Pet
 	//Кладем питомца пользователя в переменную
-	if err := database.DB.Where("user_id = ?", user.ID).First(&pet).Error; err != nil {
+	if err := database.DB.Preload("LikedPets").Preload("DislikedPets").Where("user_id = ?", user.ID).First(&pet).Error; err != nil {
 		ErrLogger.Printf("Failed to get user [%v] pet from DB: %v", user.ID, err)
 		return err
 	}
 	//Кладем подходящих питомцев в переменную
 	var suitablePets []models.Pet
+
 	if err := database.DB.Preload(clause.Associations).Where(
 		"type_pet = ? AND mating = ? AND user_id != ?",
 		pet.TypePet,
@@ -354,7 +355,20 @@ func GetSuitablePets(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.JSON(suitablePets)
+	likedDislikedPets := make([]*models.Pet, 0)
+	likedDislikedPets = append(likedDislikedPets, pet.LikedPets...)
+	likedDislikedPets = append(likedDislikedPets, pet.DislikedPets...)
+
+	result := utils.Filter[models.Pet](suitablePets, func(p models.Pet) bool {
+		for _, el := range likedDislikedPets {
+			if p.ID == el.ID {
+				return true
+			}
+		}
+		return false
+	})
+
+	return c.JSON(result)
 }
 
 //*Лайк питомца. (LikedPetId) -> match or notMatch
@@ -367,6 +381,7 @@ func LikePet(c *fiber.Ctx) error {
 		ErrLogger.Printf("Не спарсил данные! %s", err)
 		return err
 	}
+
 	//Удалить питомца с DislikedPets
 	database.DB.Unscoped().Model(&userPet).Association("DislikedPets").Delete(&likedPet)
 	//Создать питомца в LikedPets

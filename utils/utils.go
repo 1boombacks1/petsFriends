@@ -49,4 +49,13 @@ func DeleteImage(pathToImg string) error {
 	return nil
 }
 
+func Filter[T any](slice []T, predicate func(T) bool) (res []T) {
+	for _, el := range slice {
+		if !predicate(el) {
+			res = append(res, el)
+		}
+	}
+	return
+}
+
 //355 ане скинул быстро

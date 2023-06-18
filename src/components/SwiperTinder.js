@@ -59,6 +59,9 @@ function SwiperTinder() {
     };
 
     fetchSuitablePets().then((data) => {
+      if (data === null) {
+        return
+      }
       setSuitablePets(data);
       setCurrentIndex(data.length - 1);
     });
@@ -120,7 +123,6 @@ function SwiperTinder() {
   };
 
   const onChangeSide = (side, element) => {
-    console.log(side, element);
     element.children[0].children[1].classList.remove("active");
     if (side === "left") {
       element.classList.remove("right");
