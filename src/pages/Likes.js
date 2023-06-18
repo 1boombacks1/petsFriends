@@ -77,7 +77,7 @@ const checkProfileClick = (petId) => {
 
   return (
     <div className='content' style={{ paddingTop: 75 }}>
-      {newIsMatch && <ModalMatch matchInfo={matchInfo} setNewIsMatch={setNewIsMatch}/>}
+      {newIsMatch && <ModalMatch matchInfo={matchInfo}/>}
       <h2>Питомцы, которым вы приглянулись</h2>
       <div className='flex wrap petsbox'>
         {petsLikedUserPet.map((pet) => (
