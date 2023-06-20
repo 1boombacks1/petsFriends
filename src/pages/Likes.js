@@ -66,6 +66,7 @@ const Likes = () => {
           headers: { 'Content-type': 'application/json' },
           body: JSON.stringify({
             dislikedPetId: petId,
+            confirmed: true,
           })
       })
   }

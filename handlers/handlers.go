@@ -173,12 +173,12 @@ func RegisterPet(c *fiber.Ctx) error {
 	}
 
 	pet := models.Pet{
-		TypePet: payload.TypePet,
+		TypePet: c.FormValue("petType") == "true",
 		Name:    payload.Name,
 		Age:     uint(payload.Age),
-		Sex:     payload.Sex,
+		Sex:     c.FormValue("sex") == "true",
 		BreedID: uint(payload.Breed),
-		Mating:  payload.IsMeeting,
+		Mating:  c.FormValue("breed") == "true",
 		UserID:  user.ID,
 		Images: []models.Image{
 			{Path: db_path},
@@ -264,6 +264,8 @@ func GetProfilePetById(c *fiber.Ctx) error {
 	return c.JSON(pet)
 }
 
+//TODO:При добавлении фоток нужно жестко привязать к фоткам id, чтобы возможно было их удалить в случае чего
+//TODO:Добавить возможность изменить первую фотку
 func UpdateUserInfo(c *fiber.Ctx) error {
 	user := c.Locals("user").(models.UserResponse)
 
@@ -392,9 +394,10 @@ func GetSuitablePets(c *fiber.Ctx) error {
 
 //*Лайк питомца. (LikedPetId) -> match or notMatch
 func LikePet(c *fiber.Ctx) error {
-	user := c.Locals("user").(models.UserResponse)
+	userID := c.Locals("user").(models.UserResponse).ID
 	var userPet models.Pet
-	database.DB.Preload("Images").Where("user_id = ?", user.ID).First(&userPet)
+	database.DB.Preload("Images").Where("user_id = ?", userID).First(&userPet)
+
 	var likedPet models.Pet
 	if err := c.BodyParser(&likedPet); err != nil {
 		ErrLogger.Printf("Не спарсил данные! %s", err)
@@ -408,31 +411,33 @@ func LikePet(c *fiber.Ctx) error {
 
 	InfoLogger.Printf("Питомец [%v] лайкнул питомца [%v]", userPet.ID, likedPet.ID)
 
-	if err := database.DB.Table("pairs").Where("pet_id = ? AND pair_id = ?", userPet.ID, likedPet.ID).
-		Or("pet_id = ? AND pair_id = ?", likedPet.ID, userPet.ID).First(&models.Pet{}).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return c.JSON(models.MatchResponse{
-				IsMatch: false,
-			})
-		}
+	var count int64
+	database.DB.Debug().Unscoped().Table("pairs").Where("pet_id = ? AND pair_id = ?", userPet.ID, likedPet.ID).
+		Or("pet_id = ? AND pair_id = ?", likedPet.ID, userPet.ID).Count(&count)
+
+	if count > 0 {
+		database.DB.Preload("Images").First(&likedPet, likedPet.ID)
+
+		var user models.User
+		database.DB.Find(&user, userID)
+
+		return c.JSON(models.MatchResponse{
+			IsMatch:  true,
+			UserPet:  userPet,
+			LikedPet: likedPet,
+			Contact:  user.Contact,
+		})
 	}
 
-	database.DB.Preload("Images").First(&likedPet, likedPet.ID)
-	var userInfo models.User
-	database.DB.Find(&user)
-
 	return c.JSON(models.MatchResponse{
-		IsMatch:  true,
-		UserPet:  userPet,
-		LikedPet: likedPet,
-		Contact:  userInfo.Contact,
+		IsMatch: false,
 	})
 }
 
 func DislikePet(c *fiber.Ctx) error {
-	user := c.Locals("user").(models.UserResponse)
+	userID := c.Locals("user").(models.UserResponse).ID
 	var userPet models.Pet
-	database.DB.Where("user_id = ?", user.ID).First(&userPet)
+	database.DB.Where("user_id = ?", userID).First(&userPet)
 
 	var dislikedPet models.DislikedPet
 	if err := c.BodyParser(&dislikedPet); err != nil {
@@ -440,11 +445,12 @@ func DislikePet(c *fiber.Ctx) error {
 		return err
 	}
 	dislikedPet.PetID = userPet.ID
+
 	//Проверка сущетствует ли запись в DislikedPets
 	//? Заметка: В метод Append класть нужно СТРОГО модель из Ассоциации, которую задали в структуре
 	//? В данном случае DislikedPets в моделе прописана *[]Pet - значит нужна модель Pet,
 	//? и ничто другое
-	if err := database.DB.Where("disliked_pet_id = ?", dislikedPet.DislikedPetID).First(&dislikedPet).Error; errors.Is(
+	if err := database.DB.Debug().Where("disliked_pet_id = ?", dislikedPet.DislikedPetID).First(&dislikedPet).Error; errors.Is(
 		err, gorm.ErrRecordNotFound) {
 		InfoLogger.Print("Запись не найдена, идет создания записи в таблицу DislikedPet")
 		InfoLogger.Printf("Pet: %v", dislikedPet)
@@ -453,11 +459,6 @@ func DislikePet(c *fiber.Ctx) error {
 			"pet_id":          dislikedPet.PetID,
 			"disliked_pet_id": dislikedPet.DislikedPetID,
 		})
-		// if err := database.DB.Model(&userPet).Association("DislikedPets").Append(&models.Pet{
-		// 	Model: gorm.Model{ID: dislikedPet.DislikedPetID},
-		// }); err != nil {
-		// 	ErrLogger.Fatal(err)
-		// }
 	} else {
 		InfoLogger.Print("Запись найдена, идет изменение записи в таблицу DislikedPet")
 		InfoLogger.Printf("Pet: %v", dislikedPet)
@@ -475,12 +476,10 @@ func GetLikeAndLikedPets(c *fiber.Ctx) error {
 
 	//Питомцы, которым понравился питомец пользователя
 	var petslikedUserPet []models.Pet
-	likedPetIDs := make([]uint, 0)
-
+	likedPetIDs := make([]uint, 1)
 	for _, likedPet := range pet.LikedPets {
 		likedPetIDs = append(likedPetIDs, likedPet.ID)
 	}
-
 	database.DB.Preload("Images").Preload("LikedPets").Preload("DislikedPets").
 		Where(
 			"id IN (SELECT pet_id FROM liked_pets WHERE liked_pet_id = ? AND pet_id NOT IN (?) AND id NOT IN (SELECT disliked_pet_id from disliked_pets WHERE confirmed is true))",
@@ -494,7 +493,6 @@ func GetLikeAndLikedPets(c *fiber.Ctx) error {
 		https://stackoverflow.com/questions/63475885/how-to-query-a-many2many-relationship-with-a-where-clause-on-the-association-wit/73797763#73797763
 		Отсюда взял варианты
 	*/
-	//после фильтрации должен остаться только 12. при дизлайке confirmed==true -> не отобразиться
 
 	return c.JSON(fiber.Map{
 		"likedPets":        pet.LikedPets,

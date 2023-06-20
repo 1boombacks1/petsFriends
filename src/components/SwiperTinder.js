@@ -92,6 +92,7 @@ function SwiperTinder() {
           headers: { "Content-type": "application/json" },
           body: JSON.stringify({
             dislikedPetId: petId,
+            confirmed: false
           }),
         });
       };
@@ -120,6 +121,8 @@ function SwiperTinder() {
         if (data.isMatch === true) {
           setIsMatch(true)
         }
+        //проверить регистрацию пользователя
+        //проверить модалку
       });
     }
     updateCurrentIndex(index - 1);
@@ -256,7 +259,7 @@ function SwiperTinder() {
               </div>
             </TinderCard>
           ))}
-          <div className="nothing">Закончились!</div>
+          <div className="nothing">Конец,<br/>пока питомцев нет!</div>
         </div>
         <div className="bigword">YES</div>
       </div>

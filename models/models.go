@@ -9,7 +9,7 @@ type User struct {
 	Login    string `gorm:"unique" json:"login"`
 	Contact  string `json:"contact"`
 	Password []byte `json:"-"`
-	Pets     []Pet  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Pets     []Pet  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 type Pet struct {
@@ -23,18 +23,18 @@ type Pet struct {
 	Mating       bool    `gorm:"not null" json:"isMating"`
 	AboutMeInfo  string  `json:"aboutMeInfo"`
 	Pedigree     bool    `json:"pedigree" gorm:"default:false"`
-	Awards       []Award `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"awards"`
+	Awards       []Award `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"awards"`
 	UserID       uint    `json:"userID"`
-	Images       []Image `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"photos"`
-	LikedPets    []*Pet  `gorm:"many2many:liked_pets" json:"likedPets"`
-	DislikedPets []*Pet  `gorm:"many2many:disliked_pets" json:"dislikedPets"`
-	Pairs        []*Pet  `gorm:"many2many:pairs"`
+	Images       []Image `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"photos"`
+	LikedPets    []*Pet  `gorm:"many2many:liked_pets;constraint:OnDelete:CASCADE;" json:"likedPets"`
+	DislikedPets []*Pet  `gorm:"many2many:disliked_pets;constraint:OnDelete:CASCADE;" json:"dislikedPets"`
+	Pairs        []*Pet  `gorm:"many2many:pairs;constraint:OnDelete:CASCADE;"`
 }
 
 type DislikedPet struct {
 	PetID         uint `gorm:"primaryKey" json:"petID"`
 	DislikedPetID uint `gorm:"primaryKey" json:"dislikedPetId"`
-	Confirmed     bool `gorm:"default:false"`
+	Confirmed     bool `gorm:"default:false" json:"confirmed"`
 }
 
 type Image struct {
