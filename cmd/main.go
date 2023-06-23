@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -20,13 +21,16 @@ func main() {
 
 	app.Static("/static", "../profileImages")
 
+	clientURL := os.Getenv("CLIENT_HOST") + ":" + os.Getenv("CLIENT_PORT")
+	serverURL := os.Getenv("SERVER_HOST") + ":" + os.Getenv("SERVER_PORT")
+
 	app.Use(cors.New(cors.Config{
 		AllowCredentials: true,
-		AllowOrigins:     "http://localhost:3000",
+		AllowOrigins:     clientURL,
 	}))
 
 	routes.Setup(app)
 
 	fmt.Print("Идет запуск сервера!")
-	log.Fatal(app.Listen(":4000"))
+	log.Fatal(app.Listen(serverURL))
 }

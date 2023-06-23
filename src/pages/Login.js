@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 
 const server_url = process.env.REACT_APP_SERVER_URL
 
@@ -7,6 +7,21 @@ const Login = () => {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const [redirectTo, setRedirectTo] = useState(null);
+
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const checkAuth = async() => {
+      const response = await fetch(server_url + "/auth/checker", {
+        credentials: "include",
+      })
+      if (response.status === 403) {
+        alert("Вы уже авторизованы 😘")
+        navigate("/match")
+      }
+    }
+    checkAuth()
+  })
 
   const submit = async (e) => {
     e.preventDefault();

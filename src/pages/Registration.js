@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 
 const server_url = process.env.REACT_APP_SERVER_URL
 
@@ -11,6 +12,21 @@ const Registration = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordMatch, setPasswordMatch] = useState(true);
   const [registered, setRegistered] = useState(false);
+
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const checkAuth = async() => {
+      const response = await fetch(server_url + "/auth/checker", {
+        credentials: "include",
+      })
+      if (response.status === 403) {
+        alert("Вы уже авторизованы 😘")
+        navigate("/match")
+      }
+    }
+    checkAuth()
+  })
 
   const submit = async (e) => {
     e.preventDefault();
@@ -71,7 +87,7 @@ const Registration = () => {
             <input
               name="contact"
               type="url"
-              placeholder="Введи ссылку для связи (tg,vk,insta)"
+              placeholder="Контакт(tg,vk,insta,whatsapp)"
               required
               onChange={(e) => setContact(e.target.value)}
             />

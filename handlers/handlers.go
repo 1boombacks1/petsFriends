@@ -5,7 +5,6 @@ import (
 	. "d0c/petsFriends/logs"
 	"d0c/petsFriends/models"
 	"d0c/petsFriends/utils"
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -32,7 +31,7 @@ func Register(c *fiber.Ctx) error {
 		Name:     data["name"],
 		Login:    data["login"],
 		Password: password,
-		Contact:  data["contact"],
+		Contact:  utils.ValidContactForm(data["contact"]),
 	}
 
 	if err := database.DB.Create(&user).Error; err != nil {
@@ -124,6 +123,10 @@ func Login(c *fiber.Ctx) error {
 	return c.JSON(sendData)
 }
 
+func Checker(c *fiber.Ctx) error {
+	return c.SendStatus(200)
+}
+
 func Logout(c *fiber.Ctx) error {
 	cookie := fiber.Cookie{
 		Name:     "jwt",
@@ -153,13 +156,6 @@ func GetBreeds(c *fiber.Ctx) error {
 func RegisterPet(c *fiber.Ctx) error {
 	user := c.Locals("user").(models.UserResponse)
 
-	var payload models.RegisterRequest
-
-	if err := c.BodyParser(&payload); err != nil {
-		ErrLogger.Printf("Не спарсил данные! %s", err)
-		return err
-	}
-
 	img, err := c.FormFile("img")
 	if err != nil {
 		ErrLogger.Printf("Failed to get file from client: %v", err)
@@ -172,13 +168,16 @@ func RegisterPet(c *fiber.Ctx) error {
 		return err
 	}
 
+	age, _ := strconv.Atoi(c.FormValue("age"))
+	breed, _ := strconv.Atoi(c.FormValue("breed"))
+
 	pet := models.Pet{
 		TypePet: c.FormValue("petType") == "true",
-		Name:    payload.Name,
-		Age:     uint(payload.Age),
+		Name:    c.FormValue("name"),
+		Age:     uint(age),
 		Sex:     c.FormValue("sex") == "true",
-		BreedID: uint(payload.Breed),
-		Mating:  c.FormValue("breed") == "true",
+		BreedID: uint(breed),
+		Mating:  c.FormValue("goal") == "true",
 		UserID:  user.ID,
 		Images: []models.Image{
 			{Path: db_path},
@@ -196,12 +195,13 @@ func RegisterPet(c *fiber.Ctx) error {
 	InfoLogger.Printf(
 		"Питомец пользователя [%d] зарегистрирован [Имя: %s,Пол: %v,Тип: %v,Порода: %v,Цель: %v,Возраст: %d]",
 		user.ID,
-		payload.Name,
-		payload.Sex,
-		payload.TypePet,
-		payload.Breed,
-		payload.IsMeeting,
-		payload.Age)
+		pet.Name,
+		pet.Sex,
+		pet.TypePet,
+		pet.Breed,
+		pet.Mating,
+		pet.Age,
+	)
 
 	return c.SendStatus(fiber.StatusOK)
 }
@@ -211,7 +211,9 @@ func GetMe(c *fiber.Ctx) error {
 
 	var userPet models.Pet
 
-	if err := database.DB.Preload("Breed").Preload("Images").Preload("Awards").
+	if err := database.DB.Preload("Breed").Preload("Images", func(db *gorm.DB) *gorm.DB {
+		return db.Order("id")
+	}).Preload("Awards").
 		Where("user_id = ?", user.ID).Find(&userPet).Error; err != nil {
 		ErrLogger.Printf("Не удалось найти питомца пользователя: %v", err)
 		return err
@@ -322,7 +324,7 @@ func UpdateUserInfo(c *fiber.Ctx) error {
 			database.DB.Unscoped().
 				Where("pet_id = ? AND path LIKE ?", pet.ID, "%/"+imgID+".%").First(&deletedImg).Delete(&models.Image{})
 			if err := utils.DeleteImage(deletedImg.Path); err != nil {
-				ErrLogger.Printf("Не удалось удалить фото %s", deletedImg.Path)
+				ErrLogger.Printf("Не удалось удалить фото %s: \n%v", deletedImg.Path, err)
 			}
 		}
 	}
@@ -350,6 +352,39 @@ func UpdateUserInfo(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(payload)
+}
+
+func UpdateProfilePhoto(c *fiber.Ctx) error {
+	userID := c.Locals("user").(models.UserResponse).ID
+	photo, err := c.FormFile("photo")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status":  "failed",
+			"message": "Отправьте фото",
+		})
+	}
+	var pet models.Pet
+	database.DB.Preload("Images", func(db *gorm.DB) *gorm.DB {
+		return db.Order("id")
+	}).First(&pet, "user_id = ?", userID)
+	imagePath := pet.Images[0].Path
+	utils.DeleteImage(imagePath)
+
+	before, _, _ := strings.Cut(imagePath, ".")
+	timestamp := fmt.Sprintf("?%d", time.Now().Unix())
+	newPath := before + "." + strings.Split(photo.Filename, ".")[1]
+
+	InfoLogger.Printf("Сгенерирован путь - %s", newPath)
+
+	if err = c.SaveFile(photo, os.Getenv("IMAGES_PATH")+newPath); err != nil {
+		ErrLogger.Printf("Failed to change image %s on server: %v", imagePath, err)
+		return c.SendStatus(500)
+	}
+	InfoLogger.Printf("Saved image %v on server", imagePath)
+
+	database.DB.Model(&models.Image{}).Where("pet_id = ? and path LIKE ?", pet.ID, "%/1.%").Update("path", newPath+timestamp)
+
+	return c.SendStatus(200)
 }
 
 //*Получение питомцев для карточек
@@ -450,29 +485,22 @@ func DislikePet(c *fiber.Ctx) error {
 	//? Заметка: В метод Append класть нужно СТРОГО модель из Ассоциации, которую задали в структуре
 	//? В данном случае DislikedPets в моделе прописана *[]Pet - значит нужна модель Pet,
 	//? и ничто другое
-	if err := database.DB.Debug().Where("disliked_pet_id = ?", dislikedPet.DislikedPetID).First(&dislikedPet).Error; errors.Is(
-		err, gorm.ErrRecordNotFound) {
-		InfoLogger.Print("Запись не найдена, идет создания записи в таблицу DislikedPet")
-		InfoLogger.Printf("Pet: %v", dislikedPet)
-
-		database.DB.Table("disliked_pets").Create(map[string]interface{}{
-			"pet_id":          dislikedPet.PetID,
-			"disliked_pet_id": dislikedPet.DislikedPetID,
-		})
-	} else {
-		InfoLogger.Print("Запись найдена, идет изменение записи в таблицу DislikedPet")
-		InfoLogger.Printf("Pet: %v", dislikedPet)
-		database.DB.Model(&dislikedPet).Update("confirmed", true)
-	}
+	database.DB.Debug().Where("disliked_pet_id = ?", dislikedPet.DislikedPetID).Assign(models.DislikedPet{
+		Confirmed: dislikedPet.Confirmed,
+	}).FirstOrCreate(&dislikedPet)
 
 	return c.JSON(dislikedPet)
 }
 
-func GetLikeAndLikedPets(c *fiber.Ctx) error {
-	user := c.Locals("user").(models.UserResponse)
+func GetLikeAndLikedPetsAndPairs(c *fiber.Ctx) error {
+	userID := c.Locals("user").(models.UserResponse).ID
 
 	var pet models.Pet
-	database.DB.Preload("LikedPets.Images").Preload(clause.Associations).Where("user_id = ?", user.ID).First(&pet)
+	database.DB.
+		Preload("LikedPets.Images").
+		Preload("Pairs.Images").
+		Preload(clause.Associations).
+		Where("user_id = ?", userID).First(&pet)
 
 	//Питомцы, которым понравился питомец пользователя
 	var petslikedUserPet []models.Pet
@@ -494,8 +522,27 @@ func GetLikeAndLikedPets(c *fiber.Ctx) error {
 		Отсюда взял варианты
 	*/
 
+	//Питомцы-пары пользователя
+	type pairUserPet struct {
+		UserContact  string `json:"contact"`
+		PetID        uint   `json:"petID"`
+		PetName      string `json:"petName"`
+		PetImagePath string `json:"petImagePath"`
+	}
+	var petsUsers []pairUserPet
+
+	database.DB.Debug().Model(&models.User{}).Select(
+		"users.contact as user_contact, pets.id as pet_id, pets.name as pet_name, images.path as pet_image_path",
+	).
+		Joins("JOIN pets ON pets.user_id = users.id").
+		Joins("JOIN images ON pets.id = images.pet_id AND images.path LIKE ?", "%/1.%").
+		Where("pets.id IN (SELECT pair_id from pairs WHERE pet_id = (?) OR pair_id = (?))", pet.ID, pet.ID).Scan(&petsUsers)
+
+	InfoLogger.Print(petsUsers)
+
 	return c.JSON(fiber.Map{
 		"likedPets":        pet.LikedPets,
 		"petsLikedUserPet": petslikedUserPet,
+		"pairPets":         petsUsers,
 	})
 }

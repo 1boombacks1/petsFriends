@@ -137,6 +137,26 @@ const MyProfile = () => {
       console.error("Error fetching new data:", error);
     }
   };
+  const clickChangeProfilePhoto = (img) => {
+    const file = img.target.files[0]
+    const formData = new FormData()
+    formData.append("photo",file)
+    const changePhoto = async() => {
+      const response = await fetch(server_url + "/api/user/updateProfilePhoto",{
+        credentials: "include",
+        method: "PATCH",
+        body: formData
+      })
+      if (response.status === 400) {
+        alert("Необходимо изображение")
+      } else if (response.status === 500) {
+        alert("Ошибка сервера, повторите позже")
+      } else if (response.status === 200) {
+        navigate(0)
+      }
+    }
+    changePhoto()
+  }
 
   return (
     <div className="content sb profile">
@@ -152,7 +172,15 @@ const MyProfile = () => {
             {breed}, {age} years old
           </p>
           <div className="flex" style={{ marginTop: 33 }}>
-            <button>Изменить фото профиля</button>
+            <label className="changeProfilePhoto" style={{margin: 0, fontSize: 14}}>
+              <input
+                      type="file"
+                      accept="image/gif, image/jpeg, image/png"
+                      name="img"
+                      onChange={clickChangeProfilePhoto}
+                    />
+                    Изменить фото профиля
+                    </label>
             <button
               className={isEdit ? "active" : ""}
               onClick={() => setIsEdit(true)}

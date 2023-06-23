@@ -59,6 +59,7 @@ const RegisterPet = () => {
     formData.append("breed", breed);
     formData.append("goal", goal);
     formData.append("img", selectedImg);
+    console.log(formData)
 
     const response = await fetch(server_url + "/api/user/registerPet", {
       method: "POST",
@@ -197,9 +198,6 @@ const RegisterPet = () => {
               <label htmlFor="findFriends">Найти друзей</label>
             </div>
           </div>
-          <button type="button" className="rounded-button" onClick={() => console.log(petType)}>
-            проверка
-          </button>
           <button type="submit" className="rounded-button">
             Выполнить
           </button>

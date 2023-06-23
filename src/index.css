@@ -2,8 +2,18 @@
 @font-face {
   font-family: 'Gilroy';
   src: url('../public/Gilroy-Regular.ttf');
-  font-weight: 400;
-  font-style: normal;
+}
+@font-face {
+  font-family: 'Gilroy-bold';
+  src: url('../public/Gilroy-Bold.ttf');
+}
+@font-face {
+  font-family: 'Gilroy-semibold';
+  src: url('../public/Gilroy-Semibold.ttf');
+}
+@font-face {
+  font-family: 'Gilroy-ultralight';
+  src: url('../public/Gilroy-UltraLight.ttf');
 }
 * {
   margin: 0;

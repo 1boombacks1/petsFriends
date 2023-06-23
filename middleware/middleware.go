@@ -12,7 +12,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func JwtCheck(c *fiber.Ctx) error {
+func UserJwtCheck(c *fiber.Ctx) error {
 	var tokenString string
 	authorization := c.Get("Authorization")
 
@@ -52,3 +52,12 @@ func JwtCheck(c *fiber.Ctx) error {
 	c.Locals("user", models.FilterUserResponse(&user))
 	return c.Next()
 }
+
+func AuthJwtCheck(c *fiber.Ctx) error {
+	if strings.HasPrefix(c.Get("Authorization"), "Bearer ") || c.Cookies("jwt") != "" {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"status": "fail", "message": "You are logged, to get started, log out of the profile",
+		})
+}
+return c.Next()}
+

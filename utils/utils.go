@@ -41,7 +41,8 @@ func MakeImagePath(userId uint, imageName string) string {
 }
 
 func DeleteImage(pathToImg string) error {
-	fullPath := os.Getenv("IMAGES_PATH") + pathToImg
+	correctPath, _, _ := strings.Cut(pathToImg, "?")
+	fullPath := os.Getenv("IMAGES_PATH") + correctPath
 	err := os.Remove(fullPath)
 	if err != nil {
 		return err
@@ -58,4 +59,9 @@ func Filter[T any](slice []T, predicate func(T) bool) (res []T) {
 	return
 }
 
-//355 ане скинул быстро
+func ValidContactForm(url string) string {
+	if strings.HasPrefix(url, "http") {
+		return url
+	}
+	return "https://" + url
+}

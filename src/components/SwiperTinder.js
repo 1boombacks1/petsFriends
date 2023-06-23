@@ -121,8 +121,6 @@ function SwiperTinder() {
         if (data.isMatch === true) {
           setIsMatch(true)
         }
-        //проверить регистрацию пользователя
-        //проверить модалку
       });
     }
     updateCurrentIndex(index - 1);
