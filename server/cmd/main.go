@@ -22,7 +22,6 @@ func main() {
 	app.Static("/static", "../../profileImages")
 
 	clientURL := os.Getenv("CLIENT_HOST") + ":" + os.Getenv("CLIENT_PORT")
-	// serverURL := os.Getenv("SERVER_HOST") + ":" + os.Getenv("SERVER_PORT")
 
 	app.Use(cors.New(cors.Config{
 		AllowCredentials: true,
@@ -32,5 +31,5 @@ func main() {
 	routes.Setup(app)
 
 	fmt.Print("Идет запуск сервера!")
-	log.Fatal(app.Listen(":" + os.Getenv("SERVER_PORT")))
+	log.Fatal(app.Listen(":4000"))
 }

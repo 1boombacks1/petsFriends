@@ -34,7 +34,7 @@ func Setup(app *fiber.App) {
 			user.Post("/likePet", handlers.LikePet)
 
 			user.Get("/getLikeAndLikedPetsAndPairs", handlers.GetLikeAndLikedPetsAndPairs)
-
+			
 			user.Get("/getProfile/:id", handlers.GetProfilePetById)
 		}
 	}
